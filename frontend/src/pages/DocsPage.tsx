@@ -104,7 +104,7 @@ function UserDocsPage() {
         </div>
 
         {/* Guide cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 18, marginBottom: 28 }}>
+        <div className="docs-guide-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 18, marginBottom: 28 }}>
           {guides.map((g, idx) => (
             <div
               key={g.title}
@@ -225,7 +225,7 @@ function UserDocsPage() {
             </div>
             <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Arti Status Tugas</span>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)" }}>
+          <div className="docs-status-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)" }}>
             {statusInfo.map((s, i) => (
               <div key={s.s} style={{
                 padding: "18px",
@@ -271,7 +271,7 @@ function UserDocsPage() {
             </div>
             <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Tips & Petunjuk Penting</span>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+          <div className="docs-tips-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
             {[
               { icon: faCoins,         color: "#C8960A", text: "Saldo token yang sudah habis tidak bisa diisi sendiri — ajukan ke admin melalui halaman Pengajuan Token." },
               { icon: faCircleCheck,   color: "#22c55e", text: "Status partial artinya tugas selesai sebagian dan token untuk sisa yang belum selesai akan dikembalikan otomatis." },
@@ -321,6 +321,24 @@ function UserDocsPage() {
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 640px) {
+          .docs-guide-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .docs-status-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .docs-status-grid > div {
+            border-right: none !important;
+            border-bottom: 1px solid var(--border) !important;
+          }
+          .docs-status-grid > div:last-child {
+            border-bottom: none !important;
+          }
+          .docs-tips-grid {
+            grid-template-columns: 1fr !important;
+          }
         }
       `}</style>
     </>

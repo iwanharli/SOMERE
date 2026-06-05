@@ -53,7 +53,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
     <div style={{ minHeight: "100vh", background: "var(--bg-base)", display: "flex", flexDirection: "column" }}>
 
       {/* ── Top Navigation ── */}
-      <header style={{
+      <header className="user-header" style={{
         height: 60,
         background: "rgba(18,17,13,0.92)",
         backdropFilter: "blur(12px)",
@@ -66,16 +66,16 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 9, marginRight: 28, flexShrink: 0 }}>
           <img src="/logo-somere.png" alt="SOMERE" style={{ width: 30, height: 30, objectFit: "contain" }} />
-          <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: "0.06em", color: "var(--text-primary)" }}>
+          <span className="user-logo-text" style={{ fontSize: 14, fontWeight: 800, letterSpacing: "0.06em", color: "var(--text-primary)" }}>
             SOMERE
           </span>
         </div>
 
         {/* Divider vertikal */}
-        <div style={{ width: 1, height: 20, background: "var(--border)", marginRight: 20, flexShrink: 0 }} />
+        <div className="user-header-divider" style={{ width: 1, height: 20, background: "var(--border)", marginRight: 20, flexShrink: 0 }} />
 
         {/* Nav tabs */}
-        <nav style={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}>
+        <nav className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}>
           {nav.map(item => (
             <NavLink
               key={item.to} to={item.to} end
@@ -153,7 +153,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
               }}>
                 {user?.name?.charAt(0).toUpperCase()}
               </div>
-              <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)" }}>{user?.name}</span>
+              <span className="user-avatar-name" style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)" }}>{user?.name}</span>
               <FA icon={faChevronDown} style={{ fontSize: 9, color: "var(--text-secondary)", transition: "transform 0.15s", transform: dropdownOpen ? "rotate(180deg)" : "none" }} />
             </button>
 
@@ -206,16 +206,98 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
       </header>
 
       {/* ── Konten ── */}
-      <main style={{ flex: 1, padding: "28px", width: "100%", maxWidth: 1280, margin: "0 auto", alignSelf: "stretch", boxSizing: "border-box", position: "relative" }}>
+      <main className="user-main-content" style={{ flex: 1, padding: "28px", width: "100%", maxWidth: 1280, margin: "0 auto", alignSelf: "stretch", boxSizing: "border-box", position: "relative" }}>
         {children}
         <ContentLoaderUser pathname={pathname} />
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="mobile-bottom-nav">
+        {nav.map(item => (
+          <NavLink
+            key={item.to} to={item.to} end
+            className={({ isActive }) => `mobile-nav-link ${isActive ? "active" : ""}`}
+          >
+            <FA icon={item.icon} className="mobile-nav-icon" />
+            <span className="mobile-nav-label">{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
 
       <style>{`
         @keyframes slideDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
         @keyframes rotateSunUser { from { transform:translate(-50%,-50%) rotate(0deg); } to { transform:translate(-50%,-50%) rotate(360deg); } }
         @keyframes fadeInUser { from { opacity:0; } to { opacity:1; } }
         .user-nav-link:hover { background: var(--bg-elevated) !important; color: var(--text-primary) !important; }
+        
+        .mobile-bottom-nav {
+          display: none;
+        }
+
+        @media (max-width: 768px) {
+          .user-header {
+            justify-content: space-between !important;
+          }
+          .user-logo-text {
+            display: none !important;
+          }
+          .user-header-divider {
+            display: none !important;
+          }
+          .desktop-nav {
+            display: none !important;
+          }
+          .mobile-bottom-nav {
+            display: flex !important;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(19, 22, 31, 0.94);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border);
+            z-index: 100;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 10px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+          }
+          .mobile-nav-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 600;
+            flex: 1;
+            height: 100%;
+            transition: all 0.15s ease;
+          }
+          .mobile-nav-link.active {
+            color: var(--accent);
+          }
+          .mobile-nav-icon {
+            font-size: 16px;
+            opacity: 0.85;
+          }
+          .mobile-nav-link.active .mobile-nav-icon {
+            opacity: 1;
+            filter: drop-shadow(0 0 6px rgba(200,150,10,0.3));
+          }
+          .user-main-content {
+            padding: 16px !important;
+            padding-bottom: 84px !important; /* prevent content overlap */
+          }
+        }
+        @media (max-width: 480px) {
+          .user-avatar-name {
+            display: none !important;
+          }
+        }
       `}</style>
     </div>
   );

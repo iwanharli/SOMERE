@@ -1485,11 +1485,37 @@ const userServicesCss = `
     }
 
     .services-toolbar-meta {
-      justify-content: space-between;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     .service-card-grid {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .services-page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .services-total-badge {
+      align-items: flex-start;
+    }
+    .type-dropdown-btn {
+      flex: 1 1 auto;
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .type-dropdown-panel {
+      right: auto;
+      left: 0;
+      min-width: calc(100vw - 32px);
+      max-width: 320px;
     }
   }
 

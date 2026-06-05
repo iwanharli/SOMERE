@@ -53,7 +53,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{
+    <div className="login-container" style={{
       minHeight: "100vh",
       background: "var(--bg-base)",
       display: "flex", alignItems: "center", justifyContent: "center",
@@ -67,17 +67,17 @@ export default function LoginPage() {
       <div style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", width: 1, height: "55%", background: "linear-gradient(to bottom, transparent, rgba(200,150,10,0.18), transparent)" }} />
 
       {/* ── Layout dua kolom ── */}
-      <div style={{ display: "flex", alignItems: "center", gap: 64, width: "100%", maxWidth: 900, position: "relative", zIndex: 1 }}>
+      <div className="login-layout" style={{ display: "flex", alignItems: "center", gap: 64, width: "100%", maxWidth: 900, position: "relative", zIndex: 1 }}>
 
         {/* ── Kiri: Form ── */}
-        <div style={{ flex: "0 0 380px" }}>
+        <div className="login-form-side" style={{ flex: "0 0 380px" }}>
           {/* Nama aplikasi kecil di atas form */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
             <img src="/logo-somere.png" alt="SOMERE" style={{ width: 32, height: 32, objectFit: "contain", filter: "drop-shadow(0 0 6px rgba(200,150,10,0.4))" }} />
             <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: "0.1em", color: "var(--text-primary)" }}>SOMERE</span>
           </div>
 
-          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "32px 32px 28px", position: "relative", boxShadow: "0 24px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(200,150,10,0.08)" }}>
+          <div className="login-card" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "32px 32px 28px", position: "relative", boxShadow: "0 24px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(200,150,10,0.08)" }}>
             <div style={{ position: "absolute", top: 0, left: 24, right: 24, height: 1, background: "linear-gradient(to right, transparent, rgba(200,150,10,0.4), transparent)" }} />
 
             <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 5 }}>Selamat datang kembali</h2>
@@ -139,7 +139,7 @@ export default function LoginPage() {
         </div>
 
         {/* ── Kanan: Logo + Orbit ── */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <div className="login-orbit-side" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
 
           {/* Orbit container */}
           <div style={{ position: "relative", width: 300, height: 300 }}>
@@ -211,6 +211,33 @@ export default function LoginPage() {
         @keyframes counterRotate {
           from { transform: translate(-50%, -50%) rotate(0deg); }
           to   { transform: translate(-50%, -50%) rotate(-360deg); }
+        }
+        @media (max-width: 768px) {
+          .login-layout {
+            flex-direction: column !important;
+            gap: 24px !important;
+            align-items: center !important;
+            justify-content: center !important;
+          }
+          .login-form-side {
+            flex: 1 1 auto !important;
+            width: 100% !important;
+            max-width: 400px !important;
+          }
+          .login-orbit-side {
+            display: none !important;
+          }
+          .login-card {
+            padding: 24px 20px 20px !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .login-container {
+            padding: 16px !important;
+          }
+          .login-card {
+            padding: 20px 16px 16px !important;
+          }
         }
       `}</style>
     </div>

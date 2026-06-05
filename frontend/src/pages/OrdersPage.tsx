@@ -339,7 +339,7 @@ export default function TugasPage() {
 
       {/* Stat cards */}
       {!loading && orders.length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
+        <div className="user-orders-stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
           {[
             { label: "Total Tugas",   value: stats.total,     color: "var(--accent)", dim: "var(--accent-dim)",  border: "rgba(200,150,10,0.2)",  icon: faClipboardList },
             { label: "Tugas Aktif",   value: stats.active,    color: "var(--blue)",   dim: "var(--blue-dim)",    border: "rgba(59,130,246,0.15)", icon: faRotate, pulse: stats.active > 0 },
@@ -567,11 +567,11 @@ export default function TugasPage() {
                     {/* Left Accent Color Indicator */}
                     <div style={{ width: 4, flexShrink: 0, background: st?.color ?? "var(--border)", borderRadius: "4px 0 0 4px" }} />
 
-                    <div style={{ flex: 1, padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+                    <div className="order-card-body" style={{ flex: 1, padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
                       {/* Top Row / Header: Platform left, Status centered, Date right */}
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px dashed var(--border-light)", paddingBottom: 12, gap: 12 }}>
+                      <div className="order-card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px dashed var(--border-light)", paddingBottom: 12, gap: 12 }}>
                         {/* Left: Platform Identity */}
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                        <div className="order-card-header-left" style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
                           <div style={{
                             width: 32,
                             height: 32,
@@ -596,7 +596,7 @@ export default function TugasPage() {
 
                         {/* Middle: Status Pill */}
                         {st && (
-                          <div style={{ display: "flex", justifyContent: "center", flex: 1 }}>
+                          <div className="order-card-header-middle" style={{ display: "flex", justifyContent: "center", flex: 1 }}>
                             <span style={{
                               display: "inline-flex",
                               alignItems: "center",
@@ -628,7 +628,7 @@ export default function TugasPage() {
                         )}
 
                         {/* Right: Date & Time */}
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-secondary)", flexShrink: 0 }}>
+                        <div className="order-card-header-right" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-secondary)", flexShrink: 0 }}>
                           <FA icon={faCalendar} style={{ fontSize: 11, color: "var(--text-muted)" }} />
                           <span style={{ fontWeight: 500 }}>{formatDate(o.created_at)}</span>
                           <span style={{ color: "var(--text-muted)" }}>|</span>
@@ -638,7 +638,7 @@ export default function TugasPage() {
 
                       {/* Middle Section: Service Info & Target URL */}
                       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+                        <div className="order-card-title-row" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
                           <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", margin: 0, lineHeight: 1.4 }} title={cleanName}>
                             {cleanName || `Layanan #${o.service_id}`}
                           </h3>
@@ -764,9 +764,9 @@ export default function TugasPage() {
                       </div>
 
                       {/* Stats & Progress Section */}
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 24, marginTop: 4, flexWrap: "wrap" }}>
+                      <div className="order-card-metrics-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 24, marginTop: 4, flexWrap: "wrap" }}>
                         {/* Metric items */}
-                        <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+                        <div className="order-card-metrics" style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
                           {/* Jumlah */}
                           <div>
                             <span style={{ fontSize: 11, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 2 }}>Jumlah</span>
@@ -937,6 +937,78 @@ export default function TugasPage() {
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* User Orders Responsiveness */
+        .user-orders-stats-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+        @media (max-width: 992px) {
+          .user-orders-stats-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .user-orders-stats-grid {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .order-card-header {
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+          }
+          .order-card-header-left {
+            order: 1;
+          }
+          .order-card-header-middle {
+            order: 2;
+            justify-content: flex-start !important;
+            flex: none !important;
+          }
+          .order-card-header-right {
+            order: 3;
+            width: 100% !important;
+            margin-top: 4px;
+            color: var(--text-muted) !important;
+          }
+        }
+
+        @media (max-width: 576px) {
+          .order-card-title-row {
+            flex-direction: column !important;
+            gap: 8px !important;
+            align-items: flex-start !important;
+          }
+          .order-card-metrics-row {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 16px !important;
+          }
+          .order-card-metrics {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 12px !important;
+          }
+          .check-status-btn {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .order-card-body {
+            padding: 16px 14px !important;
+            gap: 12px !important;
+          }
+          .target-link-container {
+            padding: 8px 10px !important;
+          }
         }
       `}</style>
     </div>

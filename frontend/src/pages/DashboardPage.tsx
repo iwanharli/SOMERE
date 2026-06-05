@@ -220,6 +220,182 @@ export default function DashboardPage() {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: rgba(200, 150, 10, 0.45);
         }
+
+        /* Shared Dashboard Responsiveness */
+        .hero-flex-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        @media (max-width: 768px) {
+          .hero-flex-container {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 16px !important;
+            padding: 20px !important;
+          }
+          .hero-flex-container > div:last-child {
+            align-self: flex-start !important;
+          }
+        }
+
+        /* User Dashboard Grids */
+        .user-stats-grid {
+          display: grid;
+          grid-template-columns: 300px 1fr 1fr 1fr;
+          gap: 14px;
+          margin-bottom: 16px;
+        }
+        @media (max-width: 1200px) {
+          .user-stats-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+          .user-stats-grid > div:first-child {
+            grid-column: span 2 !important;
+          }
+        }
+        @media (max-width: 576px) {
+          .user-stats-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .user-stats-grid > div:first-child {
+            grid-column: span 1 !important;
+          }
+        }
+
+        .user-charts-grid-row-2 {
+          display: grid;
+          grid-template-columns: 1fr 300px;
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+        @media (max-width: 992px) {
+          .user-charts-grid-row-2 {
+            grid-template-columns: 1fr !important;
+          }
+        }
+
+        .user-charts-grid-row-2-5 {
+          display: grid;
+          grid-template-columns: 350px 1fr;
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+        @media (max-width: 992px) {
+          .user-charts-grid-row-2-5 {
+            grid-template-columns: 1fr !important;
+          }
+        }
+
+        .reason-chart-flex {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          height: 170px;
+          gap: 16px;
+        }
+        @media (max-width: 480px) {
+          .reason-chart-flex {
+            flex-direction: column !important;
+            height: auto !important;
+            align-items: center !important;
+          }
+          .reason-chart-flex > div:last-child {
+            max-height: 120px !important;
+            width: 100% !important;
+          }
+        }
+
+        .user-lists-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+        @media (max-width: 992px) {
+          .user-lists-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+
+        /* Admin Dashboard Grids */
+        .admin-stats-grid {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 14px;
+          margin-bottom: 20px;
+        }
+        @media (max-width: 1200px) {
+          .admin-stats-grid {
+            grid-template-columns: repeat(3, 1fr) !important;
+          }
+        }
+        @media (max-width: 768px) {
+          .admin-stats-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .admin-stats-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+
+        .admin-token-summary-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+        }
+        @media (max-width: 992px) {
+          .admin-token-summary-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          .admin-token-summary-grid > div {
+            border-right: 1px solid var(--border) !important;
+            border-bottom: 1px solid var(--border) !important;
+          }
+          .admin-token-summary-grid > div:nth-child(2n) {
+            border-right: none !important;
+          }
+          .admin-token-summary-grid > div:nth-child(3),
+          .admin-token-summary-grid > div:nth-child(4) {
+            border-bottom: none !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .admin-token-summary-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .admin-token-summary-grid > div {
+            border-right: none !important;
+            border-bottom: 1px solid var(--border) !important;
+          }
+          .admin-token-summary-grid > div:last-child {
+            border-bottom: none !important;
+          }
+        }
+
+        .admin-charts-grid-row-3 {
+          display: grid;
+          grid-template-columns: 2fr 1fr;
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+        @media (max-width: 992px) {
+          .admin-charts-grid-row-3 {
+            grid-template-columns: 1fr !important;
+          }
+        }
+
+        .admin-charts-grid-row-4 {
+          display: grid;
+          grid-template-columns: 280px 1fr;
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+        @media (max-width: 992px) {
+          .admin-charts-grid-row-4 {
+            grid-template-columns: 1fr !important;
+          }
+        }
       `}</style>
     </>
   );
@@ -247,7 +423,7 @@ function AdminDashboard({ user, navigate }: { user: any; navigate: any }) {
     <>
       <div style={{ animation: "slideUp 0.4s ease-out" }}>
         {/* Header + period filter */}
-        <div className="user-hero-card" style={{
+        <div className="user-hero-card hero-flex-container" style={{
           background: "linear-gradient(135deg, rgba(200,150,10,0.12) 0%, rgba(22,25,37,0.7) 100%)",
           border: "1px solid rgba(200,150,10,0.22)",
           borderRadius: "var(--radius)",
@@ -315,7 +491,7 @@ function AdminDashboard({ user, navigate }: { user: any; navigate: any }) {
         {loading || !data ? <SkeletonDashboard /> : <>
 
           {/* ── Row 1: Stat Cards ── */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14, marginBottom: 20 }}>
+          <div className="admin-stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14, marginBottom: 20 }}>
             <StatCard label="Saldo"        value={formatIDR(data.overview.balance)}        icon={faSackDollar}    color="#C8960A" sub={`≈ ${Math.floor(data.overview.balance / data.overview.tokenIdrValue).toLocaleString("id-ID")} token`} style={{ animationDelay: "0s" }} />
             <StatCard label="Total Tugas"  value={data.overview.totalOrders.toLocaleString()} icon={faClipboardList} color="#3b82f6" sub={`Periode ${PERIODS.find(p=>p.value===period)?.label}`} style={{ animationDelay: "0.03s" }} />
             <StatCard label="Selesai"      value={data.overview.completedOrders.toLocaleString()} icon={faCircleCheck} color="#22c55e" sub="Tugas selesai" style={{ animationDelay: "0.06s" }} />
@@ -332,7 +508,7 @@ function AdminDashboard({ user, navigate }: { user: any; navigate: any }) {
                 SEMUA WAKTU
               </span>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
+            <div className="admin-token-summary-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
               {[
                 { label: "Token Beredar",  value: data.tokenSummary.totalTokenInCirculation, color: "#C8960A", sub: `${data.tokenSummary.totalUserCount} user terdaftar` },
                 { label: "Token Dipakai",  value: data.tokenSummary.totalTokenUsed,          color: "#eab308", sub: `${data.tokenSummary.activeUserCount} user aktif` },
@@ -362,7 +538,7 @@ function AdminDashboard({ user, navigate }: { user: any; navigate: any }) {
           </div>
 
           {/* ── Row 3: Trend + Platform ── */}
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
+          <div className="admin-charts-grid-row-3" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
 
             {/* Tren Tugas */}
             <ChartCard title="Tren Tugas & Pengeluaran" subtitle={period === "today" ? "Hari ini" : period === "week" ? "7 hari terakhir" : period === "month" ? "30 hari terakhir" : "14 hari terakhir"} style={{ animationDelay: "0.18s" }}>
@@ -412,7 +588,7 @@ function AdminDashboard({ user, navigate }: { user: any; navigate: any }) {
           </div>
 
           {/* ── Row 4: Status Pie + Recent Orders ── */}
-          <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 16, marginBottom: 16 }}>
+          <div className="admin-charts-grid-row-4" style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 16, marginBottom: 16 }}>
 
             {/* Status Breakdown */}
             <ChartCard title="Status Tugas" subtitle="Distribusi status" style={{ animationDelay: "0.26s" }}>
@@ -678,7 +854,7 @@ function UserDashboard({ user, navigate }: { user: any; navigate: any }) {
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--border)", flexWrap: "wrap", gap: 12 }}>
-          <div style={{ display: "flex", gap: 24 }}>
+          <div className="heatmap-stats-flex" style={{ display: "flex", gap: 24 }}>
             <div>
               <span style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 2 }}>Total Laporan</span>
               <span style={{ fontSize: 16, fontWeight: 800, color: "var(--accent)" }}>{totalReportsInHeatmap.toLocaleString("id-ID")} <span style={{ fontSize: 11, fontWeight: 500, color: "var(--text-secondary)" }}>kali</span></span>
@@ -734,7 +910,7 @@ function UserDashboard({ user, navigate }: { user: any; navigate: any }) {
     const totalReports = chartData.reduce((sum, item) => sum + item.value, 0);
 
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 170, gap: 16 }}>
+      <div className="reason-chart-flex" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 170, gap: 16 }}>
         {/* Chart Column */}
         <div style={{ position: "relative", width: 150, height: 150, flexShrink: 0 }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -825,7 +1001,7 @@ function UserDashboard({ user, navigate }: { user: any; navigate: any }) {
     <div>
 
       {/* ── Hero Header ── */}
-      <div className="user-hero-card" style={{
+      <div className="user-hero-card hero-flex-container" style={{
         background: "linear-gradient(135deg, rgba(200,150,10,0.15) 0%, rgba(22,25,37,0.7) 100%)",
         border: "1px solid rgba(200,150,10,0.22)",
         borderRadius: "var(--radius)",
@@ -906,7 +1082,7 @@ function UserDashboard({ user, navigate }: { user: any; navigate: any }) {
       {loading || !data ? <SkeletonDashboard rows={4} /> : <>
 
         {/* ── Row 1: Token + Stats ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "300px 1fr 1fr 1fr", gap: 14, marginBottom: 16 }}>
+        <div className="user-stats-grid" style={{ display: "grid", gridTemplateColumns: "300px 1fr 1fr 1fr", gap: 14, marginBottom: 16 }}>
 
           {/* Token balance card */}
           <div className="token-balance-card" style={{
@@ -983,7 +1159,7 @@ function UserDashboard({ user, navigate }: { user: any; navigate: any }) {
         </div>
 
         {/* ── Row 2: Trend + Platform ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16, marginBottom: 16 }}>
+        <div className="user-charts-grid-row-2" style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16, marginBottom: 16 }}>
           <ChartCard title="Penggunaan Token" subtitle={`Tren ${PERIODS.find(p=>p.value===period)?.label?.toLowerCase()}`} style={{ animationDelay: "0.16s" }}>
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={data.trendData} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
@@ -1022,7 +1198,7 @@ function UserDashboard({ user, navigate }: { user: any; navigate: any }) {
         </div>
 
         {/* ── Row 2.5: Alasan + Kalender Heatmap ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "350px 1fr", gap: 16, marginBottom: 16 }}>
+        <div className="user-charts-grid-row-2-5" style={{ display: "grid", gridTemplateColumns: "350px 1fr", gap: 16, marginBottom: 16 }}>
           <ChartCard title="Alasan Pelaporan" subtitle="Alasan laporan yang Anda kirimkan" style={{ animationDelay: "0.22s" }}>
             {renderReasonChart(data.reasonData || [])}
           </ChartCard>
@@ -1033,7 +1209,7 @@ function UserDashboard({ user, navigate }: { user: any; navigate: any }) {
         </div>
 
         {/* ── Row 3: Tugas Aktif + Riwayat Token ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="user-lists-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
 
           {/* Tugas Aktif */}
           <ChartCard title="Tugas Aktif" subtitle="Sedang diproses saat ini"

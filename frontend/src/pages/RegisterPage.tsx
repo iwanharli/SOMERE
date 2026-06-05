@@ -82,15 +82,15 @@ export default function RegisterPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-base)", padding: 24 }}>
-      <div style={{ width: 400 }}>
+    <div className="register-container" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-base)", padding: 24 }}>
+      <div style={{ width: "100%", maxWidth: 400 }}>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
           <img src="/logo-somere.png" alt="SOMERE" style={{ width: 32, height: 32, objectFit: "contain", filter: "drop-shadow(0 0 6px rgba(200,150,10,0.4))" }} />
           <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: "0.1em", color: "var(--text-primary)" }}>SOMERE</span>
         </div>
 
-        <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "32px", position: "relative", boxShadow: "0 24px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(200,150,10,0.08)" }}>
+        <div className="register-card" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "32px", position: "relative", boxShadow: "0 24px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(200,150,10,0.08)" }}>
           <div style={{ position: "absolute", top: 0, left: 24, right: 24, height: 1, background: "linear-gradient(to right, transparent, rgba(200,150,10,0.4), transparent)" }} />
 
           {success ? (
@@ -183,6 +183,16 @@ export default function RegisterPage() {
           )}
         </div>
       </div>
+      <style>{`
+        @media (max-width: 480px) {
+          .register-container {
+            padding: 16px !important;
+          }
+          .register-card {
+            padding: 24px 20px 20px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
