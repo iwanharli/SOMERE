@@ -228,6 +228,29 @@ Jalankan migrasi skema tabel Prisma ke database PostgreSQL server:
 npm run db:migrate
 ```
 
+#### 💡 Cara Memindahkan Data dari Database Lokal (Komputer Anda) ke Server VPS
+Jika Anda ingin menyalin data pengguna, riwayat order, dan transaksi token dari database lokal ke VPS, gunakan cara berikut menggunakan `pg_dump`:
+
+1. **Ekspor (Dump) Data di Komputer Lokal Anda**:
+   Buka terminal di komputer lokal Anda dan jalankan perintah:
+   ```bash
+   pg_dump -U username_postgres_lokal -d nama_db_lokal -f db_backup.sql
+   ```
+   *(Contoh: `pg_dump -U postgres -d sore_db -f db_backup.sql`)*
+
+2. **Kirim File Backup ke VPS Server**:
+   Gunakan `scp` untuk mengunggah file `db_backup.sql` ke VPS:
+   ```bash
+   scp db_backup.sql root@84.247.145.144:/tmp/db_backup.sql
+   ```
+
+3. **Impor (Restore) Data di VPS Server**:
+   Masuk ke SSH VPS Anda dan jalankan perintah pemulihan:
+   ```bash
+   sudo -u postgres psql -d db_sore -f /tmp/db_backup.sql
+   ```
+   *(Catatan: Langkah ini akan menimpa database `db_sore` di VPS dengan seluruh data dari database lokal Anda).*
+
 ### 6. Menjalankan Backend dengan PM2
 Gunakan PM2 agar server API backend berjalan terus di latar belakang:
 ```bash
