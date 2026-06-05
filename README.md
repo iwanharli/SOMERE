@@ -169,20 +169,26 @@ npm run dev
 Berikut adalah panduan lengkap untuk men-deploy aplikasi **SORE (SOMERE)** pada lingkungan produksi seperti VPS Ubuntu, baik menggunakan nama domain sendiri maupun langsung menggunakan IP publik server (misalnya: `84.247.145.144`).
 
 ### 1. Persiapan Awal di Server
+
 Pastikan server Anda sudah terinstal **Node.js (v18+)**, **PostgreSQL**, dan **Nginx**. Pasang juga manager proses Node secara global:
+
 ```bash
 sudo npm install -g pm2
 ```
 
 ### 2. Kloning Codebase
+
 Kloning projek Anda dari GitHub ke direktori server (misalnya `/var/www/somere`):
+
 ```bash
 git clone https://github.com/iwanharli/SOMERE.git /var/www/somere
 cd /var/www/somere
 ```
 
 ### 3. Konfigurasi Environment Produksi
+
 Buat file `.env` di folder root server:
+
 ```bash
 cp .env.example .env
 nano .env
@@ -191,21 +197,27 @@ nano .env
 Sesuaikan konfigurasi environment sesuai kebutuhan server Anda. **Perhatikan pengaturan alamat host di bawah ini:**
 
 #### Skenario A: Deploy Menggunakan IP Server (`84.247.145.144`)
+
 Jika Anda belum menghubungkan nama domain ke server:
+
 ```env
 CORS_ORIGIN="http://84.247.145.144"
 VITE_API_URL="http://84.247.145.144/api"
 ```
 
 #### Skenario B: Deploy Menggunakan Nama Domain (Contoh: `somere.com`)
+
 Jika Anda sudah menyambungkan nama domain ke IP server:
+
 ```env
 CORS_ORIGIN="https://somere.com"
 VITE_API_URL="https://somere.com/api"
 ```
 
 ### 4. Instalasi Dependensi & Build
+
 Jalankan kompilasi kode dari folder root projek di server:
+
 ```bash
 # Instal seluruh paket dependensi
 npm run install:all
@@ -215,44 +227,28 @@ npm run build
 ```
 
 ### 5. Setup Database PostgreSQL & Migrasi Skema
+
 Masuk ke terminal PostgreSQL server untuk membuat database kosong:
+
 ```bash
 sudo -u postgres psql
 ```
+
 ```sql
 CREATE DATABASE db_sore;
 \q
 ```
+
 Jalankan migrasi skema tabel Prisma ke database PostgreSQL server:
+
 ```bash
 npm run db:migrate
 ```
 
-#### 💡 Cara Memindahkan Data dari Database Lokal (Komputer Anda) ke Server VPS
-Jika Anda ingin menyalin data pengguna, riwayat order, dan transaksi token dari database lokal ke VPS, gunakan cara berikut menggunakan `pg_dump`:
-
-1. **Ekspor (Dump) Data di Komputer Lokal Anda**:
-   Buka terminal di komputer lokal Anda dan jalankan perintah:
-   ```bash
-   pg_dump -U username_postgres_lokal -d nama_db_lokal -f db_backup.sql
-   ```
-   *(Contoh: `pg_dump -U postgres -d sore_db -f db_backup.sql`)*
-
-2. **Kirim File Backup ke VPS Server**:
-   Gunakan `scp` untuk mengunggah file `db_backup.sql` ke VPS:
-   ```bash
-   scp db_backup.sql root@84.247.145.144:/tmp/db_backup.sql
-   ```
-
-3. **Impor (Restore) Data di VPS Server**:
-   Masuk ke SSH VPS Anda dan jalankan perintah pemulihan:
-   ```bash
-   sudo -u postgres psql -d db_sore -f /tmp/db_backup.sql
-   ```
-   *(Catatan: Langkah ini akan menimpa database `db_sore` di VPS dengan seluruh data dari database lokal Anda).*
-
 ### 6. Menjalankan Backend dengan PM2
+
 Gunakan PM2 agar server API backend berjalan terus di latar belakang:
+
 ```bash
 cd /var/www/somere/backend
 pm2 start dist/index.js --name "somere-backend"
@@ -263,9 +259,11 @@ pm2 startup
 ```
 
 ### 7. Konfigurasi Nginx Web Server & Reverse Proxy
+
 Nginx akan menyajikan file statis React (Frontend) dan meneruskan request `/api` ke port `5000` (Backend).
 
 Buat file konfigurasi block server Nginx baru:
+
 ```bash
 sudo nano /etc/nginx/sites-available/somere
 ```
@@ -275,7 +273,7 @@ Tempelkan isi konfigurasi di bawah ini:
 ```nginx
 server {
     listen 80;
-    
+
     # Ganti dengan IP Publik server Anda atau nama Domain Anda
     server_name 84.247.145.144 somere.com www.somere.com;
 
@@ -303,6 +301,7 @@ server {
 ```
 
 Aktifkan konfigurasi blok server di Nginx dan lakukan restart service:
+
 ```bash
 sudo ln -s /etc/nginx/sites-available/somere /etc/nginx/sites-enabled/
 sudo nginx -t
@@ -310,13 +309,16 @@ sudo systemctl restart nginx
 ```
 
 ### 8. Pemasangan SSL / HTTPS (Hanya untuk Nama Domain)
+
 Jika Anda menggunakan **Skenario B (Nama Domain)**, amankan koneksi menggunakan SSL gratis Let's Encrypt:
+
 ```bash
 sudo apt update
 sudo apt install certbot python3-certbot-nginx
 sudo certbot --nginx -d somere.com -d www.somere.com
 ```
-*Catatan: Let's Encrypt tidak mengeluarkan sertifikat SSL gratis untuk alamat IP mentah (`84.247.145.144`). Jika Anda men-deploy dengan IP address langsung, aplikasi Anda hanya bisa diakses menggunakan protokol HTTP biasa (`http://84.247.145.144`).*
+
+_Catatan: Let's Encrypt tidak mengeluarkan sertifikat SSL gratis untuk alamat IP mentah (`84.247.145.144`). Jika Anda men-deploy dengan IP address langsung, aplikasi Anda hanya bisa diakses menggunakan protokol HTTP biasa (`http://84.247.145.144`)._
 
 ---
 

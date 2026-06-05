@@ -1,7 +1,9 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import dotenv from "dotenv";
 import { authRouter } from "./routes/auth";
 import { panelinRouter } from "./routes/panelin";
 import { usersRouter } from "./routes/users";
@@ -10,7 +12,6 @@ import { dashboardRouter } from "./routes/dashboard";
 import { logsRouter } from "./routes/logs";
 import { tokenRequestRouter } from "./routes/tokenRequest";
 
-dotenv.config();
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
