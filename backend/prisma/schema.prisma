@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @default(cuid())
+  username     String     @unique
+  email        String     @unique
+  name         String
+  password     String
+  role           UserRole   @default(USER)
+  status         UserStatus @default(PENDING)
+  tokenBalance   Int        @default(0)
+  failedAttempts Int        @default(0)
+  lockedUntil    DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  tokenTransactions     TokenTransaction[] @relation("UserTransactions")
+  performedTransactions TokenTransaction[] @relation("PerformedBy")
+  activityLogs          ActivityLog[]      @relation("UserLogs")
+  targetedLogs          ActivityLog[]      @relation("TargetLogs")
+  refreshTokens         RefreshToken[]
+  tokenRequests         TokenRequest[]   @relation("UserTokenRequests")
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+model Config {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  @@map("config")
+}
+
+model TokenTransaction {
+  id            String          @id @default(cuid())
+  userId        String
+  type          TokenTxType
+  amount        Int
+  balanceBefore Int
+  balanceAfter  Int
+  note          String?
+  orderId       Int?
+  serviceId     Int?
+  tokenPrice    Int?
+  performedBy   String?
+  createdAt     DateTime        @default(now())
+
+  user      User  @relation("UserTransactions", fields: [userId],      references: [id], onDelete: Cascade)
+  performer User? @relation("PerformedBy",      fields: [performedBy], references: [id], onDelete: SetNull)
+
+  @@map("token_transactions")
+}
+
+enum TokenTxType {
+  INJECT
+  DEDUCT
+  ORDER
+  REFUND
+}
+
+model ServiceTokenPrice {
+  id          String   @id @default(cuid())
+  serviceId   Int      @unique
+  tokenPrice  Int
+  isActive    Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+
+  @@map("service_token_prices")
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  userId      String
+  targetId    String?
+  event       String
+  description String
+  metadata    Json?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  user   User  @relation("UserLogs",   fields: [userId],   references: [id], onDelete: Cascade)
+  target User? @relation("TargetLogs", fields: [targetId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([event])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+model TokenRequest {
+  id         String              @id @default(cuid())
+  userId     String
+  amount     Int
+  reason     String?
+  status     TokenRequestStatus  @default(PENDING)
+  adminNote  String?
+  reviewedBy String?
+  reviewedAt DateTime?
+  createdAt  DateTime            @default(now())
+
+  user User @relation("UserTokenRequests",    fields: [userId],     references: [id], onDelete: Cascade)
+
+  @@map("token_requests")
+}
+
+enum TokenRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model PanelinService {
+  id          Int      @id
+  name        String
+  description String?
+  category    String
+  type        String
+  rate        Int
+  min         Int
+  max         Int
+  dripfeed    Boolean
+  refill      Boolean
+  cancel      Boolean
+  syncedAt    DateTime @default(now())
+
+  @@map("panelin_services")
+}
+
+model PanelinOrder {
+  id          Int      @id
+  serviceId   Int
+  link        String?
+  quantity    Int
+  rate        Int
+  charge      Int
+  startCount  Int?
+  remains     Int?
+  status      String
+  comments    String?
+  orderDate   DateTime
+  syncedAt    DateTime @default(now()) @updatedAt
+
+  @@map("panelin_orders")
+}
+
+model PanelinTransaction {
+  id              Int      @id
+  type            String?
+  amount          Int
+  balanceBefore   Int?
+  balanceAfter    Int?
+  description     String?
+  transactionDate DateTime
+  syncedAt        DateTime @default(now()) @updatedAt
+
+  @@map("panelin_transactions")
+}
