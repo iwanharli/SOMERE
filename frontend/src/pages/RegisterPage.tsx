@@ -119,7 +119,7 @@ export default function RegisterPage() {
 
                 {/* Username */}
                 <FieldWrap label="Username" error={touched.username ? errors.username : ""}>
-                  <input value={fields.username} onChange={e => handleChange("username", e.target.value)} onBlur={() => handleBlur("username")}
+                  <input value={fields.username} onChange={e => handleChange("username", e.target.value)}
                     placeholder="Contoh: johndoe" style={inputStyle(touched.username && !!errors.username)}
                     onFocus={e => e.target.style.borderColor = "rgba(200,150,10,0.6)"}
                     onBlur={e => { handleBlur("username"); e.target.style.borderColor = touched.username && errors.username ? "var(--red)" : "var(--border)"; }} />

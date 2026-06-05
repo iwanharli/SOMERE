@@ -81,7 +81,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
               key={item.to} to={item.to} end
               style={({ isActive }) => ({
                 display: "flex", alignItems: "center", gap: 6,
-                padding: "7px 13px", borderRadius: "var(--radius-sm)",
+                padding: "7px 13px",
                 fontSize: 13, fontWeight: isActive ? 600 : 400,
                 color: isActive ? "var(--accent)" : "var(--text-secondary)",
                 background: isActive ? "var(--accent-dim)" : "transparent",
