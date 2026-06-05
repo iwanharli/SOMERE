@@ -164,6 +164,139 @@ npm run dev
 
 ---
 
+## 🚢 Panduan Deploy di Server Produksi (VPS / IP Server)
+
+Berikut adalah panduan lengkap untuk men-deploy aplikasi **SORE (SOMERE)** pada lingkungan produksi seperti VPS Ubuntu, baik menggunakan nama domain sendiri maupun langsung menggunakan IP publik server (misalnya: `84.247.145.144`).
+
+### 1. Persiapan Awal di Server
+Pastikan server Anda sudah terinstal **Node.js (v18+)**, **PostgreSQL**, dan **Nginx**. Pasang juga manager proses Node secara global:
+```bash
+sudo npm install -g pm2
+```
+
+### 2. Kloning Codebase
+Kloning projek Anda dari GitHub ke direktori server (misalnya `/var/www/somere`):
+```bash
+git clone https://github.com/iwanharli/SOMERE.git /var/www/somere
+cd /var/www/somere
+```
+
+### 3. Konfigurasi Environment Produksi
+Buat file `.env` di folder root server:
+```bash
+cp .env.example .env
+nano .env
+```
+
+Sesuaikan konfigurasi environment sesuai kebutuhan server Anda. **Perhatikan pengaturan alamat host di bawah ini:**
+
+#### Skenario A: Deploy Menggunakan IP Server (`84.247.145.144`)
+Jika Anda belum menghubungkan nama domain ke server:
+```env
+CORS_ORIGIN="http://84.247.145.144"
+VITE_API_URL="http://84.247.145.144/api"
+```
+
+#### Skenario B: Deploy Menggunakan Nama Domain (Contoh: `somere.com`)
+Jika Anda sudah menyambungkan nama domain ke IP server:
+```env
+CORS_ORIGIN="https://somere.com"
+VITE_API_URL="https://somere.com/api"
+```
+
+### 4. Instalasi Dependensi & Build
+Jalankan kompilasi kode dari folder root projek di server:
+```bash
+# Instal seluruh paket dependensi
+npm run install:all
+
+# Lakukan kompilasi backend & bundling production frontend React
+npm run build
+```
+
+### 5. Setup Database PostgreSQL & Migrasi Skema
+Masuk ke terminal PostgreSQL server untuk membuat database kosong:
+```bash
+sudo -u postgres psql
+```
+```sql
+CREATE DATABASE db_sore;
+\q
+```
+Jalankan migrasi skema tabel Prisma ke database PostgreSQL server:
+```bash
+npm run db:migrate
+```
+
+### 6. Menjalankan Backend dengan PM2
+Gunakan PM2 agar server API backend berjalan terus di latar belakang:
+```bash
+cd /var/www/somere/backend
+pm2 start dist/index.js --name "somere-backend"
+
+# Simpan dan konfigurasi PM2 agar otomatis menyala saat server booting/restart
+pm2 save
+pm2 startup
+```
+
+### 7. Konfigurasi Nginx Web Server & Reverse Proxy
+Nginx akan menyajikan file statis React (Frontend) dan meneruskan request `/api` ke port `5000` (Backend).
+
+Buat file konfigurasi block server Nginx baru:
+```bash
+sudo nano /etc/nginx/sites-available/somere
+```
+
+Tempelkan isi konfigurasi di bawah ini:
+
+```nginx
+server {
+    listen 80;
+    
+    # Ganti dengan IP Publik server Anda atau nama Domain Anda
+    server_name 84.247.145.144 somere.com www.somere.com;
+
+    # Folder file statis hasil build frontend React
+    root /var/www/somere/frontend/dist;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Teruskan request /api ke Backend Express port 5000
+    location /api {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Aktifkan konfigurasi blok server di Nginx dan lakukan restart service:
+```bash
+sudo ln -s /etc/nginx/sites-available/somere /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+### 8. Pemasangan SSL / HTTPS (Hanya untuk Nama Domain)
+Jika Anda menggunakan **Skenario B (Nama Domain)**, amankan koneksi menggunakan SSL gratis Let's Encrypt:
+```bash
+sudo apt update
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d somere.com -d www.somere.com
+```
+*Catatan: Let's Encrypt tidak mengeluarkan sertifikat SSL gratis untuk alamat IP mentah (`84.247.145.144`). Jika Anda men-deploy dengan IP address langsung, aplikasi Anda hanya bisa diakses menggunakan protokol HTTP biasa (`http://84.247.145.144`).*
+
+---
+
 ## 🌐 Referensi Panelin API
 
 SORE menggunakan spesifikasi **Panelin API v1.0.0** untuk pertukaran data. Berikut detail integrasi API eksternal yang didukung:
