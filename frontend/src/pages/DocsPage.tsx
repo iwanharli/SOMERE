@@ -6,7 +6,7 @@ import {
   faGauge, faLayerGroup, faClipboardList, faCreditCard, faBolt, faBook,
   faCircleInfo, faCircleCheck, faTriangleExclamation,
   faLink, faArrowRight, faRotate, faDatabase,
-  faCoins, faPaperPlane, faClockRotateLeft,
+  faPaperPlane, faClockRotateLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faInstagram, faTiktok, faYoutube, faXTwitter, faFacebook, faTelegram,
@@ -51,17 +51,10 @@ function UserDocsPage() {
 
   const guides = [
     {
-      icon: faCoins, color: "#C8960A",
-      title: "Token",
-      desc: "Token adalah mata uang untuk menggunakan layanan. Klik saldo token di header untuk mengajukan penambahan token ke admin.",
-      steps: ["Klik badge token di header", "Isi jumlah token & alasan", "Kirim pengajuan", "Tunggu persetujuan admin"],
-      action: { label: "Ajukan Token", to: "/token-request" },
-    },
-    {
       icon: faBolt, color: "#3b82f6",
       title: "Buat Tugas",
-      desc: "Pilih layanan dari katalog lalu isi detail target. Token akan terpotong otomatis saat tugas berhasil dibuat.",
-      steps: ["Buka halaman Layanan", "Klik Pesan Sekarang", "Isi link/username target", "Konfirmasi & kirim"],
+      desc: "Pilih layanan dari katalog lalu isi detail target. Tugas akan langsung dikirim saat konfirmasi berhasil.",
+      steps: ["Buka halaman Layanan", "Klik Mulai Sekarang", "Isi link/username target", "Konfirmasi & kirim"],
       action: { label: "Lihat Layanan", to: "/services" },
     },
     {
@@ -74,8 +67,8 @@ function UserDocsPage() {
     {
       icon: faLayerGroup, color: "#a855f7",
       title: "Layanan",
-      desc: "Katalog semua layanan SMM yang tersedia. Setiap layanan menampilkan harga dalam token dan batas pemesanan.",
-      steps: ["Filter berdasarkan platform", "Cari layanan yang diinginkan", "Cek harga token", "Klik Pesan Sekarang"],
+      desc: "Katalog semua layanan SMM yang tersedia. Temukan layanan yang sesuai dan mulai tugas dengan mudah.",
+      steps: ["Filter berdasarkan platform", "Cari layanan yang diinginkan", "Klik Mulai Sekarang"],
       action: { label: "Jelajahi Layanan", to: "/services" },
     },
   ];
@@ -104,7 +97,7 @@ function UserDocsPage() {
         </div>
 
         {/* Guide cards */}
-        <div className="docs-guide-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 18, marginBottom: 28 }}>
+        <div className="user-guide-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18, marginBottom: 28 }}>
           {guides.map((g, idx) => (
             <div
               key={g.title}
@@ -117,6 +110,7 @@ function UserDocsPage() {
                 transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
                 position: "relative",
+                display: "flex", flexDirection: "column",
                 animation: "slideUp 0.35s ease-out both",
                 animationDelay: `${idx * 0.08}s`
               }}
@@ -134,20 +128,14 @@ function UserDocsPage() {
               }}
             >
               <div style={{ height: 3, background: `linear-gradient(to right, ${g.color}40, ${g.color})` }} />
-              
-              <div style={{ padding: "24px" }}>
+
+              <div style={{ padding: "24px", display: "flex", flexDirection: "column", flex: 1 }}>
                 {/* Card Title Header */}
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
                   <div style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 10,
-                    background: `${g.color}12`,
-                    border: `1.5px solid ${g.color}28`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0
+                    width: 40, height: 40, borderRadius: 10,
+                    background: `${g.color}12`, border: `1.5px solid ${g.color}28`,
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
                   }}>
                     <FA icon={g.icon} style={{ fontSize: 16, color: g.color }} />
                   </div>
@@ -155,24 +143,16 @@ function UserDocsPage() {
                 </div>
 
                 <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: 18 }}>{g.desc}</p>
-                
-                {/* Steps List */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20, background: "rgba(255,255,255,0.015)", padding: "12px 14px", borderRadius: 8, border: "1px dashed var(--border)" }}>
+
+                {/* Steps List — flex: 1 agar tombol selalu rata bawah */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, marginBottom: 20, background: "rgba(255,255,255,0.015)", padding: "12px 14px", borderRadius: 8, border: "1px dashed var(--border)" }}>
                   {g.steps.map((step, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div style={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: "50%",
-                        background: `${g.color}18`,
-                        border: `1px solid ${g.color}35`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: g.color,
-                        flexShrink: 0
+                        width: 20, height: 20, borderRadius: "50%",
+                        background: `${g.color}18`, border: `1px solid ${g.color}35`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 12, fontWeight: 700, color: g.color, flexShrink: 0
                       }}>
                         {i + 1}
                       </div>
@@ -181,33 +161,18 @@ function UserDocsPage() {
                   ))}
                 </div>
 
-                {/* Action button */}
+                {/* Action button — selalu di bawah */}
                 <button
                   onClick={() => navigate(g.action.to)}
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 8,
-                    width: "100%",
-                    padding: "10px 14px",
-                    borderRadius: 8,
-                    background: `${g.color}14`,
-                    border: `1px solid ${g.color}25`,
-                    color: g.color,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    width: "100%", padding: "10px 14px", borderRadius: 8,
+                    background: `${g.color}14`, border: `1px solid ${g.color}25`,
+                    color: g.color, fontSize: 13, fontWeight: 600,
+                    cursor: "pointer", transition: "all 0.15s ease",
                   }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = g.color;
-                    e.currentTarget.style.color = "#000";
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = `${g.color}14`;
-                    e.currentTarget.style.color = g.color;
-                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = g.color; e.currentTarget.style.color = "#000"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = `${g.color}14`; e.currentTarget.style.color = g.color; }}
                 >
                   <span>{g.action.label}</span>
                   <FA icon={faArrowRight} style={{ fontSize: 10 }} />
@@ -225,9 +190,9 @@ function UserDocsPage() {
             </div>
             <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Arti Status Tugas</span>
           </div>
-          <div className="docs-status-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)" }}>
+          <div className="user-status-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)" }}>
             {statusInfo.map((s, i) => (
-              <div key={s.s} style={{
+              <div key={s.s} className="user-status-cell" style={{
                 padding: "18px",
                 borderRight: i % 3 !== 2 ? "1px solid var(--border)" : "none",
                 borderBottom: i < 3 ? "1px solid var(--border)" : "none",
@@ -271,10 +236,9 @@ function UserDocsPage() {
             </div>
             <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Tips & Petunjuk Penting</span>
           </div>
-          <div className="docs-tips-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+          <div className="user-tips-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
             {[
-              { icon: faCoins,         color: "#C8960A", text: "Saldo token yang sudah habis tidak bisa diisi sendiri — ajukan ke admin melalui halaman Pengajuan Token." },
-              { icon: faCircleCheck,   color: "#22c55e", text: "Status partial artinya tugas selesai sebagian dan token untuk sisa yang belum selesai akan dikembalikan otomatis." },
+              { icon: faCircleCheck,   color: "#22c55e", text: "Status partial artinya tugas selesai sebagian dan sisa progres yang belum selesai akan dikembalikan otomatis." },
               { icon: faPaperPlane,    color: "#3b82f6", text: "Tugas yang sudah dikirim tidak bisa dibatalkan kecuali admin mengaktifkan fitur cancel untuk layanan tersebut." },
               { icon: faTriangleExclamation, color: "#eab308", text: "Pastikan link/username target yang Anda masukkan benar sebelum mengirim tugas." },
             ].map((tip, i) => (
@@ -322,21 +286,29 @@ function UserDocsPage() {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @media (max-width: 640px) {
-          .docs-guide-grid {
+        @media (max-width: 900px) {
+          .user-guide-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          .user-tips-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+        @media (max-width: 600px) {
+          .user-guide-grid {
             grid-template-columns: 1fr !important;
           }
-          .docs-status-grid {
+          .user-status-grid {
             grid-template-columns: 1fr !important;
           }
-          .docs-status-grid > div {
+          .user-status-cell {
             border-right: none !important;
             border-bottom: 1px solid var(--border) !important;
           }
-          .docs-status-grid > div:last-child {
+          .user-status-cell:last-child {
             border-bottom: none !important;
           }
-          .docs-tips-grid {
+          .user-tips-grid {
             grid-template-columns: 1fr !important;
           }
         }
@@ -366,10 +338,10 @@ export default function DocsPage() {
 
   return (
     <>
-      <div style={{ display: "grid", gridTemplateColumns: "230px 1fr", gap: 28, alignItems: "start", animation: "slideUp 0.4s ease-out" }}>
+      <div className="admin-docs-layout" style={{ display: "grid", gridTemplateColumns: "230px 1fr", gap: 28, alignItems: "start", animation: "slideUp 0.4s ease-out" }}>
 
         {/* ── Sidebar ── */}
-        <div style={{
+        <div className="admin-docs-sidebar" style={{
           position: "sticky", top: "calc(var(--topbar-height) + 24px)",
           background: "linear-gradient(to bottom, var(--bg-surface) 0%, #151824 100%)",
           border: "1px solid var(--border)",
@@ -377,12 +349,12 @@ export default function DocsPage() {
           overflow: "hidden",
           boxShadow: "0 4px 16px rgba(0,0,0,0.12)"
         }}>
-          <div style={{ padding: "16px 18px", borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.015)" }}>
+          <div className="admin-docs-sidebar-title" style={{ padding: "16px 18px", borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.015)" }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
               Daftar Isi
             </span>
           </div>
-          <nav style={{ padding: "8px" }}>
+          <nav className="admin-docs-nav" style={{ padding: "8px" }}>
             {SECTIONS.map((s) => {
               const active = activeSection === s.id;
               return (
@@ -401,7 +373,7 @@ export default function DocsPage() {
                     transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                     paddingLeft: active ? 12 : 10,
                   }}
-                  className="nav-btn"
+                  className={active ? "nav-btn nav-active" : "nav-btn"}
                 >
                   <FA icon={s.icon} style={{ fontSize: 13, width: 14, textAlign: "center", flexShrink: 0, color: active ? "var(--accent)" : "var(--text-muted)" }} />
                   <span style={{ flex: 1 }}>{s.label}</span>
@@ -425,7 +397,7 @@ export default function DocsPage() {
 
           {/* ── Pengantar ── */}
           <Section id="pengantar">
-            <div style={{
+            <div className="admin-intro-hero" style={{
               background: "linear-gradient(135deg, rgba(200,150,10,0.15) 0%, rgba(22,25,37,0.7) 100%)",
               border: "1px solid rgba(200,150,10,0.25)",
               borderRadius: "var(--radius)",
@@ -473,7 +445,7 @@ export default function DocsPage() {
               </p>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+            <div className="admin-intro-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
               {[
                 { icon: faBolt,          color: "var(--accent)",  label: "Buat Tugas",    desc: "Pilih jenis layanan, masukan target URL/username, dan jadwalkan pelaporan instan." },
                 { icon: faClipboardList, color: "var(--blue)",    label: "Pantau Progres",  desc: "Sistem pooling status otomatis untuk mendapatkan persentase sisa laporan dan status real-time." },
@@ -558,7 +530,7 @@ export default function DocsPage() {
             <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 14, lineHeight: 1.6 }}>
               Field <Code>Link / Username Target</Code> menerima URL lengkap maupun username. Berikut format yang direkomendasikan per platform:
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 24 }}>
+            <div className="admin-platforms-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 24 }}>
               {PLATFORMS.map((p) => (
                 <div key={p.name} style={{
                   display: "flex", alignItems: "center", gap: 14, padding: "12px 16px",
@@ -617,8 +589,8 @@ export default function DocsPage() {
                 { label: "Rate/1k",   desc: "Harga dalam denominasi Rupiah per 1.000 kuantitas unit laporan." },
                 { label: "Min – Max", desc: "Batas minimum dan maksimum pemesanan per tugas." },
               ].map((row) => (
-                <div key={row.label} style={{ display: "flex", gap: 0, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
-                  <div style={{ padding: "10px 14px", minWidth: 120, background: "var(--bg-surface)", borderRight: "1px solid var(--border)", display: "flex", alignItems: "center" }}>
+                <div key={row.label} className="admin-desc-row" style={{ display: "flex", gap: 0, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
+                  <div className="admin-desc-label" style={{ padding: "10px 14px", minWidth: 120, background: "var(--bg-surface)", borderRight: "1px solid var(--border)", display: "flex", alignItems: "center" }}>
                     <Code>{row.label}</Code>
                   </div>
                   <div style={{ padding: "10px 14px", fontSize: 13, color: "var(--text-secondary)", display: "flex", alignItems: "center" }}>{row.desc}</div>
@@ -639,7 +611,7 @@ export default function DocsPage() {
             <Lead>Riwayat semua tugas dengan pagination 15 per halaman.</Lead>
 
             <SubTitle>Status Tugas</SubTitle>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 20 }}>
+            <div className="admin-statuses-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 20 }}>
               {ORDER_STATUSES.map((item) => (
                 <div key={item.s} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "var(--radius)" }} className="tip-item">
                   <span className="pulse-dot" style={{ width: 9, height: 9, borderRadius: "50%", background: item.color, flexShrink: 0, boxShadow: `0 0 6px ${item.color}` }} />
@@ -706,8 +678,8 @@ export default function DocsPage() {
                 { label: "Sinkronkan Transaksi",     freq: "Incremental",        desc: "Ambil transaksi baru saja (ID > terakhir di database)." },
                 { label: "Saldo",              freq: "Cache 60 detik",     desc: "Selalu live dari API, di-cache 60 detik untuk mencegah rate limit." },
               ].map((item) => (
-                <div key={item.label} style={{ display: "flex", gap: 0, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
-                  <div style={{ padding: "12px 14px", minWidth: 170, background: "var(--bg-surface)", borderRight: "1px solid var(--border)", flexShrink: 0 }}>
+                <div key={item.label} className="admin-sync-row" style={{ display: "flex", gap: 0, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
+                  <div className="admin-sync-label" style={{ padding: "12px 14px", minWidth: 170, background: "var(--bg-surface)", borderRight: "1px solid var(--border)", flexShrink: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 3 }}>{item.label}</div>
                     <div style={{ fontSize: 12, color: "var(--accent)", fontWeight: 600 }}>{item.freq}</div>
                   </div>
@@ -728,7 +700,7 @@ export default function DocsPage() {
             <SectionTitle icon={faLink} color="var(--accent)">Platform yang Didukung</SectionTitle>
             <Lead>Layanan SORE terbagi dalam platform-platform media sosial berikut:</Lead>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
+            <div className="admin-platforms-list-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
               {PLATFORMS.map((p) => (
                 <div
                   key={p.name}
@@ -798,6 +770,69 @@ export default function DocsPage() {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        @media (max-width: 800px) {
+          .admin-docs-layout {
+            grid-template-columns: 1fr !important;
+          }
+          .admin-docs-sidebar {
+            position: relative !important;
+            top: 0 !important;
+          }
+          .admin-docs-sidebar-title {
+            display: none !important;
+          }
+          .admin-docs-nav {
+            display: flex !important;
+            overflow-x: auto !important;
+            gap: 4px !important;
+            padding: 6px 8px !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+          }
+          .admin-docs-nav::-webkit-scrollbar {
+            display: none;
+          }
+          .admin-docs-nav .nav-btn {
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            width: auto !important;
+            padding: 8px 14px !important;
+            border-left: none !important;
+            font-size: 12px !important;
+            border-radius: 20px !important;
+            gap: 6px !important;
+          }
+          .admin-docs-nav .nav-btn:hover {
+            padding-left: 14px !important;
+          }
+          .admin-docs-nav .nav-active {
+            background: var(--accent-dim) !important;
+            border: 1px solid rgba(200,150,10,0.3) !important;
+          }
+          .admin-intro-hero {
+            padding: 20px !important;
+          }
+          .admin-intro-grid,
+          .admin-platforms-list-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .admin-platforms-grid,
+          .admin-statuses-grid,
+          .admin-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .admin-desc-row,
+          .admin-sync-row {
+            flex-direction: column !important;
+          }
+          .admin-desc-label,
+          .admin-sync-label {
+            border-right: none !important;
+            border-bottom: 1px solid var(--border) !important;
+            min-width: unset !important;
+            width: 100% !important;
+          }
+        }
       `}</style>
     </>
   );
@@ -844,7 +879,7 @@ function Lead({ children }: { children: React.ReactNode }) {
 }
 
 function Grid({ cols, children }: { cols: number; children: React.ReactNode }) {
-  return <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 16, marginBottom: 20 }}>{children}</div>;
+  return <div className="admin-grid" style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 16, marginBottom: 20 }}>{children}</div>;
 }
 
 function InfoCard({ title, desc }: { title: string; desc: string }) {

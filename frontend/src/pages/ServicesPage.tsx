@@ -7,6 +7,7 @@ import { detectPlatform, PLATFORM_COLOR, detectServiceType, SERVICE_TYPES, detec
 import {
   faMagnifyingGlass, faXmark, faCoins, faBolt, faArrowRight, faTriangleExclamation,
   faChevronLeft, faChevronRight, faChevronDown, faLayerGroup, faSliders,
+  faTableCells, faList,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faInstagram, faTiktok, faYoutube, faXTwitter,
@@ -55,6 +56,7 @@ export default function ServicesPage() {
   const [serviceType, setServiceType]     = useState("all");
   const [reportReason, setReportReason]   = useState("all");
   const [onlyAvailable, setOnlyAvailable] = useState(false);
+  const [viewMode, setViewMode]           = useState<"grid" | "list">("grid");
   const [typeDropdown, setTypeDropdown]   = useState(false);
   const [reasonDropdown, setReasonDropdown] = useState(false);
   const [page, setPage]                   = useState(1);
@@ -310,6 +312,24 @@ export default function ServicesPage() {
                     <FA icon={faXmark} /> Reset
                   </button>
                 )}
+
+                {/* View mode toggle */}
+                <div className="view-toggle">
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className={viewMode === "grid" ? "view-toggle-btn active" : "view-toggle-btn"}
+                    title="Tampilan grid"
+                  >
+                    <FA icon={faTableCells} />
+                  </button>
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={viewMode === "list" ? "view-toggle-btn active" : "view-toggle-btn"}
+                    title="Tampilan list"
+                  >
+                    <FA icon={faList} />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -355,7 +375,7 @@ export default function ServicesPage() {
             </div>
           ) : (
             <>
-              <div className="service-card-grid">
+              <div className={viewMode === "grid" ? "service-card-grid" : "service-list"}>
                 {userItems.map((s, itemIndex) => {
                   const plt        = detectPlatform(s.name);
                   const pColor     = plt ? PLATFORM_COLOR[plt] : "#8b8fa8";
@@ -363,8 +383,6 @@ export default function ServicesPage() {
                   const tp         = tokenPriceMap[s.id];
                   const available  = tp?.isActive;
                   const typeInfo   = SERVICE_TYPES[detectServiceType(s.name)];
-                  const reasonInfo = REPORT_REASONS[detectReportReason(s.name)];
-                  // Hilangkan prefix platform dari judul
                   const cleanName  = s.name
                     .replace(/^instagram\s+/i, "")
                     .replace(/^tiktok\s+/i, "")
@@ -372,11 +390,43 @@ export default function ServicesPage() {
                     .replace(/^twitter\/x\s+/i, "")
                     .replace(/^facebook\s+/i, "")
                     .replace(/^telegram\s+/i, "");
-
-                  // Pisah nama: "Report Account" dan "[Spam & Scam]"
                   const bracketMatch = cleanName.match(/^(.*?)\s*(\[.*\])\s*$/);
                   const titleMain    = bracketMatch ? bracketMatch[1].trim() : cleanName;
                   const titleSub     = bracketMatch ? bracketMatch[2].replace(/[\[\]]/g, "").trim() : "";
+
+                  if (viewMode === "list") return (
+                    <article
+                      key={s.id}
+                      className={available ? "service-list-item" : "service-list-item unavailable"}
+                      style={{ ["--service-color" as string]: pColor }}
+                    >
+                      <div className="sli-icon">
+                        {pIcon ? <FA icon={pIcon} /> : <FA icon={faLayerGroup} />}
+                      </div>
+                      <div className="sli-content">
+                        {/* Judul utama + subtitle — baris pertama, paling menonjol */}
+                        <div className="sli-title-row">
+                          <h2 className="sli-title">{titleMain}</h2>
+                          {titleSub && <span className="sli-subtitle">{titleSub}</span>}
+                        </div>
+                        {/* Platform + type + id — baris kedua, metadata sekunder */}
+                        <div className="sli-meta-row">
+                          <span className="sc-platform-label">{plt ?? "Layanan"}</span>
+                          {typeInfo && (
+                            <span className="sc-type-tag" style={{ ["--tc" as string]: typeInfo.color }}>
+                              {typeInfo.label}
+                            </span>
+                          )}
+                          <span className="sli-sep">·</span>
+                          <span className="sli-id">#{s.id}</span>
+                        </div>
+                      </div>
+                      {available
+                        ? <a href={`/orders/create?service=${s.id}`} className="sli-cta">Mulai <FA icon={faArrowRight} style={{ fontSize: 10 }} /></a>
+                        : <span className="sli-unavail">Belum tersedia</span>
+                      }
+                    </article>
+                  );
 
                   return (
                     <article
@@ -384,59 +434,32 @@ export default function ServicesPage() {
                       className={available ? "service-card" : "service-card unavailable"}
                       style={{ ["--service-color" as string]: pColor, ["--card-index" as string]: itemIndex }}
                     >
-                      {/* ID pojok kanan atas — emas */}
                       <span className="sc-id-corner">#{s.id}</span>
-
                       <div className="service-card-accent" />
                       <div className="service-card-body">
-
-                        {/* ── Top: icon + type tag ── */}
                         <div className="sc-top">
                           <div className="sc-icon">
                             {pIcon ? <FA icon={pIcon} /> : <FA icon={faLayerGroup} />}
                           </div>
-                          <div className="sc-top-right">
-                            {typeInfo && (
-                              <span className="sc-type-tag" style={{ ["--tc" as string]: typeInfo.color }}>
-                                {typeInfo.label}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* ── Judul utama & sub ── */}
-                        <div className="sc-title-block">
-                          <div className="sc-platform-label">{plt ?? "Layanan"}</div>
-                          <h2 className="sc-title">{titleMain}</h2>
-                          {titleSub && <div className="sc-subtitle">{titleSub}</div>}
-                        </div>
-
-                        {/* ── Divider ── */}
-                        <div className="sc-divider" />
-
-                        {/* ── Price row ── */}
-                        <div className="sc-price-row">
-                          {available ? (
-                            <div className="sc-token">
-                              <FA icon={faCoins} style={{ fontSize: 13, color: "var(--accent)" }} />
-                              <span className="sc-token-num">{tp.tokenPrice}</span>
-                              <span className="sc-token-label">token</span>
-                              <span style={{ fontSize: 11, color: "rgba(200,150,10,0.8)", fontWeight: 500 }}>/1000 Report</span>
+                          <div className="sc-title-block">
+                            <div className="sc-platform-row">
+                              <span className="sc-platform-label">{plt ?? "Layanan"}</span>
+                              {typeInfo && (
+                                <span className="sc-type-tag" style={{ ["--tc" as string]: typeInfo.color }}>
+                                  {typeInfo.label}
+                                </span>
+                              )}
                             </div>
-                          ) : (
-                            <span className="sc-unavail">Belum tersedia</span>
-                          )}
-                          <div className="sc-range">
-                            <span className="sc-range-label">Jumlah Report</span>
-                            <span className="sc-range-val">
-                              {s.min >= 1000
-                                ? `${(s.min/1000).toLocaleString("id-ID")}k – ${(s.max/1000).toLocaleString("id-ID")}k`
-                                : `${s.min.toLocaleString("id-ID")} – ${s.max.toLocaleString("id-ID")}`}
-                            </span>
+                            <h2 className="sc-title">{titleMain}</h2>
                           </div>
                         </div>
-
-                        {/* ── CTA ── */}
+                        {titleSub && <div className="sc-subtitle">{titleSub}</div>}
+                        <div className="sc-divider" />
+                        {!available && (
+                          <div className="sc-price-row">
+                            <span className="sc-unavail">Belum tersedia</span>
+                          </div>
+                        )}
                         {available && (
                           <a href={`/orders/create?service=${s.id}`} className="sc-cta">
                             Mulai Sekarang <FA icon={faArrowRight} style={{ fontSize: 11 }} />
@@ -1036,11 +1059,196 @@ const userServicesCss = `
     letter-spacing: 0.01em;
   }
 
+  /* View toggle */
+  .view-toggle {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .view-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .view-toggle-btn:first-child {
+    border-right: 1px solid var(--border);
+  }
+
+  .view-toggle-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  .view-toggle-btn.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  /* Grid view */
   .service-card-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
+    gap: 20px;
     animation: servicesFadeUp 0.36s 0.08s ease-out both;
+  }
+
+  /* List view */
+  .service-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    animation: servicesFadeUp 0.36s 0.08s ease-out both;
+  }
+
+  .service-list-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 16px 11px 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-surface);
+    position: relative;
+    overflow: hidden;
+    transition: background 0.15s, border-color 0.18s, box-shadow 0.18s;
+  }
+
+  .service-list-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--service-color);
+  }
+
+  .service-list-item:hover {
+    background: color-mix(in srgb, var(--service-color) 5%, var(--bg-surface));
+    border-color: color-mix(in srgb, var(--service-color) 38%, var(--border));
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+
+  .service-list-item.unavailable {
+    opacity: 0.48;
+    pointer-events: none;
+  }
+
+  .sli-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--service-color) 14%, var(--bg-elevated));
+    border: 1.5px solid color-mix(in srgb, var(--service-color) 28%, transparent);
+    color: var(--service-color);
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+
+  .sli-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Title row — first, prominent */
+  .sli-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 3px;
+    min-width: 0;
+  }
+
+  .sli-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .sli-subtitle {
+    font-size: 11px;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--service-color) 90%, white);
+    background: color-mix(in srgb, var(--service-color) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--service-color) 25%, transparent);
+    padding: 1px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Meta row — second, secondary */
+  .sli-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sli-sep {
+    color: var(--text-muted);
+    font-size: 11px;
+    opacity: 0.5;
+  }
+
+  .sli-id {
+    font-size: 11px;
+    font-family: ui-monospace, monospace;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+
+  .sli-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(200,150,10,0.3);
+    background: rgba(200,150,10,0.08);
+    color: #C8960A;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .sli-cta:hover {
+    background: rgba(200,150,10,0.16);
+    border-color: rgba(200,150,10,0.48);
+  }
+
+  .sli-unavail {
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-style: italic;
+    flex-shrink: 0;
   }
 
   .service-card,
@@ -1093,44 +1301,46 @@ const userServicesCss = `
     gap: 0;
   }
 
-  /* Top row: icon + type tag */
+  /* Top row: icon + title block berdampingan */
   .sc-top {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 10px;
   }
 
   .sc-icon {
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     background: color-mix(in srgb, var(--service-color) 14%, var(--bg-elevated));
     border: 1.5px solid color-mix(in srgb, var(--service-color) 28%, transparent);
     color: var(--service-color);
-    font-size: 18px;
+    font-size: 22px;
     flex-shrink: 0;
     transition: background 0.18s, box-shadow 0.18s;
   }
 
   .service-card:hover .sc-icon {
     background: color-mix(in srgb, var(--service-color) 20%, var(--bg-elevated));
-    box-shadow: 0 0 10px color-mix(in srgb, var(--service-color) 25%, transparent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--service-color) 25%, transparent);
   }
 
-  .sc-top-right {
+  .sc-platform-row {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
+    margin-bottom: 5px;
+    flex-wrap: wrap;
   }
 
   .sc-type-tag {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     padding: 3px 8px;
     border-radius: 5px;
     background: color-mix(in srgb, var(--tc) 13%, transparent);
@@ -1155,40 +1365,40 @@ const userServicesCss = `
 
   /* Platform label */
   .sc-platform-label {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--service-color);
-    margin-bottom: 3px;
     text-transform: uppercase;
     letter-spacing: 0.07em;
   }
 
   /* Judul utama */
   .sc-title {
-    font-size: 14px;
+    font-size: 17px;
     font-weight: 700;
     color: var(--text-primary);
-    line-height: 1.35;
-    margin-bottom: 6px;
+    line-height: 1.3;
+    margin: 0;
   }
 
   /* Sub judul (isi bracket) — pill badge */
   .sc-subtitle {
     display: inline-flex;
     align-items: center;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
     color: color-mix(in srgb, var(--service-color) 90%, white);
     background: color-mix(in srgb, var(--service-color) 12%, transparent);
     border: 1px solid color-mix(in srgb, var(--service-color) 25%, transparent);
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-bottom: 10px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
   }
 
   /* Title block */
   .sc-title-block {
     flex: 1;
+    min-width: 0;
   }
 
   /* Divider */

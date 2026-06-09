@@ -177,38 +177,32 @@ panelinRouter.post("/orders", async (req: AuthRequest, res) => {
   const serviceId = Number(req.body.service);
   const quantity = Number(req.body.quantity);
 
-  // ── Cek & potong token jika role USER ──────────────────────────────────────
+  // ── Pay-as-you-go: USER bisa order tanpa cek saldo, tagihan dicatat ─────────
   if (req.role === "USER") {
-    const [user, tokenPrice] = await prisma.$transaction([
-      prisma.user.findUnique({ where: { id: req.userId! }, select: { tokenBalance: true } }),
-      prisma.serviceTokenPrice.findUnique({ where: { serviceId } }),
-    ]);
-
-    if (!tokenPrice || !tokenPrice.isActive) {
-      res.status(403).json({ error: "Layanan ini belum tersedia untuk pembelian dengan token." });
-      return;
-    }
     if (!Number.isFinite(quantity) || quantity <= 0) {
       res.status(400).json({ error: "Jumlah order tidak valid." });
       return;
     }
 
-    const tokenCost = Math.ceil((quantity / 1000) * tokenPrice.tokenPrice);
+    const [user, tokenPrice] = await prisma.$transaction([
+      prisma.user.findUnique({ where: { id: req.userId! }, select: { tokenBalance: true } }),
+      prisma.serviceTokenPrice.findUnique({ where: { serviceId } }),
+    ]);
 
-    if (!user || user.tokenBalance < tokenCost) {
-      res.status(400).json({ error: `Token tidak cukup. Dibutuhkan: ${tokenCost}, tersedia: ${user?.tokenBalance ?? 0}.` });
-      return;
-    }
+    // Hitung tagihan (0 jika belum ada harga dikonfigurasi)
+    const tokenCost = tokenPrice?.isActive
+      ? Math.ceil((quantity / 1000) * tokenPrice.tokenPrice)
+      : 0;
 
     // Kirim order ke Panelin
     const { data } = await panelin.post("/orders", req.body);
     if (!data?.data) { res.status(500).json({ error: "Gagal membuat order" }); return; }
     const o = data.data;
 
-    const before = user.tokenBalance;
-    const after  = before - tokenCost;
+    const before = user?.tokenBalance ?? 0;
+    const after  = before - tokenCost; // bisa negatif = hutang
 
-    // Simpan order + potong token + catat transaksi (atomic)
+    // Simpan order + catat tagihan + update saldo (atomic)
     await prisma.$transaction([
       prisma.panelinOrder.upsert({
         where:  { id: o.id },
@@ -216,12 +210,12 @@ panelinRouter.post("/orders", async (req: AuthRequest, res) => {
         update: {},
       }),
       prisma.tokenTransaction.create({
-        data: { userId: req.userId!, type: "ORDER", amount: tokenCost, balanceBefore: before, balanceAfter: after, orderId: o.id, serviceId, tokenPrice: tokenPrice.tokenPrice },
+        data: { userId: req.userId!, type: "ORDER", amount: tokenCost, balanceBefore: before, balanceAfter: after, orderId: o.id, serviceId, tokenPrice: tokenPrice?.tokenPrice ?? 0 },
       }),
       prisma.user.update({ where: { id: req.userId! }, data: { tokenBalance: after } }),
     ]);
 
-    await log({ userId: req.userId!, event: "ORDER_CREATE", description: `Buat tugas #${data.data?.id} — service #${serviceId}, ${req.body.quantity} unit${req.body.link ? ` → ${req.body.link}` : ""}`, metadata: { orderId: data.data?.id, serviceId, quantity: req.body.quantity, link: req.body.link, tokenPricePer1000: tokenPrice.tokenPrice, tokenUsed: tokenCost }, req });
+    await log({ userId: req.userId!, event: "ORDER_CREATE", description: `Buat tugas #${o.id} — service #${serviceId}, ${quantity} unit${req.body.link ? ` → ${req.body.link}` : ""}`, metadata: { orderId: o.id, serviceId, quantity, link: req.body.link, tokenCost }, req });
     res.status(201).json(data);
     return;
   }

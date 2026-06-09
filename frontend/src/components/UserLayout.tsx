@@ -5,7 +5,7 @@ import { api } from "../lib/api";
 import { FA } from "./Icon";
 import {
   faGauge, faLayerGroup, faClipboardList,
-  faCoins, faGear, faRightFromBracket, faChevronDown, faBook,
+  faGear, faRightFromBracket, faChevronDown, faBook,
 } from "@fortawesome/free-solid-svg-icons";
 
 const nav = [
@@ -21,15 +21,8 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    api.get("/token/balance")
-      .then(r => setTokenBalance(r.data?.data?.tokenBalance ?? 0))
-      .catch(() => {});
-  }, []);
 
   const handleClickOutside = useCallback((e: MouseEvent) => {
     if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -104,29 +97,6 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
 
         {/* Kanan: saldo token + avatar */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-
-          {/* Token balance */}
-          {tokenBalance !== null && (
-            <button onClick={() => navigate("/token-request")} style={{
-              display: "flex", alignItems: "center", gap: 7,
-              padding: "5px 12px 5px 10px", borderRadius: "var(--radius-sm)",
-              background: "var(--accent-dim)", border: "1px solid rgba(200,150,10,0.3)",
-              cursor: "pointer", transition: "all 0.15s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(200,150,10,0.18)"; e.currentTarget.style.borderColor = "rgba(200,150,10,0.55)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "var(--accent-dim)"; e.currentTarget.style.borderColor = "rgba(200,150,10,0.3)"; }}>
-              <FA icon={faCoins} style={{ fontSize: 12, color: "var(--accent)" }} />
-              <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--accent)", lineHeight: 1 }}>
-                  {tokenBalance.toLocaleString("id-ID")}
-                </span>
-                <span style={{ fontSize: 10, fontWeight: 500, color: "rgba(200,150,10,0.7)", letterSpacing: "0.04em" }}>TOKEN</span>
-              </div>
-            </button>
-          )}
-
-          {/* Divider vertikal */}
-          <div style={{ width: 1, height: 20, background: "var(--border)", flexShrink: 0 }} />
 
           {/* Avatar dropdown */}
           <div ref={dropdownRef} style={{ position: "relative" }}>

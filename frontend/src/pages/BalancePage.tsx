@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
-import { swSuccess, swError, swErrorHtml, swConfirm } from "../lib/swal";
+import { swSuccess, swError } from "../lib/swal";
 import SyncButton from "../components/SyncButton";
 import { FA } from "../components/Icon";
 import {
-  faCoins, faArrowUp, faArrowDown, faClockRotateLeft,
-  faXmark, faCircleCheck, faCircleXmark, faTriangleExclamation,
-  faShield, faUser, faChevronLeft, faChevronRight,
+  faCoins, faClockRotateLeft,
+  faCircleCheck, faCircleXmark,
+  faUser, faChevronLeft, faChevronRight,
   faCreditCard, faArrowTrendUp, faArrowTrendDown, faClock, faPaperPlane,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -70,18 +70,8 @@ export default function BalancePage() {
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingTx, setLoadingTx]   = useState(false);
 
-  const [modal, setModal]       = useState<"inject" | "deduct" | null>(null);
-  const [amount, setAmount]     = useState("");
-  const [note, setNote]         = useState("");
-  const [saving, setSaving]     = useState(false);
-  const [feedback, setFeedback] = useState<{ ok: boolean; msg: string } | null>(null);
-  const [tokenIdrValue, setTokenIdrValue] = useState<number>(10000);
-
   useEffect(() => {
     loadUsers();
-    api.get<{ data: { tokenIdrValue: number } }>("/token/config")
-      .then(r => setTokenIdrValue(r.data.data.tokenIdrValue))
-      .catch(() => {});
   }, []);
 
   async function loadUsers() {
@@ -108,57 +98,6 @@ export default function BalancePage() {
   const formatIDR = (v: number) =>
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(v);
 
-  async function handleMutation() {
-    if (!selectedUser || !amount) return;
-    const qty = parseInt(amount);
-
-    // Konfirmasi sebelum deduct
-    if (modal === "deduct") {
-      const confirm = await swConfirm({
-        title: "Konfirmasi Deduct Token",
-        html: `Kurangi <strong style="color:#ef4444">${qty.toLocaleString("id-ID")} token</strong> dari akun <strong style="color:#e2e4f0">${selectedUser.name}</strong>?`,
-        confirmText: "Ya, Deduct",
-        cancelText: "Batal",
-        danger: true,
-      });
-      if (!confirm.isConfirmed) return;
-    }
-
-    setSaving(true); setFeedback(null);
-    try {
-      await api.post(`/token/${modal}`, { userId: selectedUser.id, amount: qty, note: note || undefined });
-      await loadUsers();
-      const updated = (await api.get<{ data: UserSummary[] }>("/token/users-summary")).data.data.find(u => u.id === selectedUser.id);
-      if (updated) setSelected(updated);
-      await loadTx(selectedUser.id, 1);
-      setModal(null); setAmount(""); setNote("");
-      swSuccess(
-        modal === "inject" ? "Token Berhasil Ditambahkan" : "Token Berhasil Dikurangi",
-        `${qty.toLocaleString("id-ID")} token berhasil ${modal === "inject" ? "ditambahkan ke" : "dikurangi dari"} ${selectedUser.name}.`
-      );
-    } catch (err: any) {
-      const detail = err?.response?.data?.detail;
-      const errMsg = err?.response?.data?.error ?? "Terjadi kesalahan";
-      if (detail && modal === "inject") {
-        swErrorHtml("Saldo Tidak Cukup", `
-          <div style="text-align:left;font-size:13px;line-height:1.8;color:#8b8fa8">
-            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #252840">
-              <span>Dibutuhkan</span><strong style="color:#ef4444">${formatIDR(detail.required)}</strong>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #252840">
-              <span>Saldo tersedia</span><strong style="color:#e2e4f0">${formatIDR(detail.available)}</strong>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:6px 0">
-              <span>Maks. bisa di-inject</span><strong style="color:#C8960A">${detail.maxToken.toLocaleString("id-ID")} token</strong>
-            </div>
-          </div>
-        `);
-      } else {
-        swError("Gagal", errMsg);
-      }
-      setFeedback({ ok: false, msg: errMsg });
-    } finally { setSaving(false); }
-  }
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -416,24 +355,14 @@ export default function BalancePage() {
                       <div style={{ fontSize: 13, color: "var(--text-muted)" }}>@{selectedUser.username} · {selectedUser.email}</div>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => { setModal("inject"); setFeedback(null); }} style={{ ...btnStyle, background: "var(--green-dim)", color: "var(--green)", border: "1px solid rgba(34,197,94,0.3)" }}>
-                      <FA icon={faArrowUp} style={{ fontSize: 11 }} /> Inject
-                    </button>
-                    <button onClick={() => { setModal("deduct"); setFeedback(null); }} style={{ ...btnStyle, background: "var(--red-dim)", color: "var(--red)", border: "1px solid rgba(239,68,68,0.3)" }}>
-                      <FA icon={faArrowDown} style={{ fontSize: 11 }} /> Deduct
-                    </button>
-                  </div>
                 </div>
 
                 {/* Stats */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10, marginTop: 18 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginTop: 18 }}>
                   {[
-                    { label: "Saldo",    value: selectedUser.tokenBalance,  color: "var(--accent)" },
-                    { label: "Ditambahkan", value: selectedUser.totalInjected, color: "var(--green)"  },
-                    { label: "Dipakai",     value: selectedUser.totalUsed,     color: "var(--yellow)" },
-                    { label: "Dikembalikan", value: selectedUser.totalRefunded, color: "var(--blue)"   },
-                    { label: "Dikurangi", value: selectedUser.totalDeducted, color: "var(--red)"    },
+                    { label: "Tagihan",      value: selectedUser.tokenBalance,  color: selectedUser.tokenBalance < 0 ? "var(--red)" : "var(--accent)" },
+                    { label: "Total Dipakai", value: selectedUser.totalUsed,     color: "var(--yellow)" },
+                    { label: "Dikembalikan",  value: selectedUser.totalRefunded, color: "var(--blue)"   },
                   ].map((s) => (
                     <div key={s.label} style={{ padding: "12px 14px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", textAlign: "center" }}>
                       <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>{s.label}</div>
@@ -521,78 +450,6 @@ export default function BalancePage() {
         </div>}
       </div>
 
-      {/* ── Modal inject/deduct ── */}
-      {modal && selectedUser && (
-        <div onClick={() => setModal(null)} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(2px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden", animation: "slideUp 0.15s ease" }}>
-            <div style={{ padding: "15px 20px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 15, fontWeight: 600, color: modal === "inject" ? "var(--green)" : "var(--red)" }}>
-                <FA icon={modal === "inject" ? faArrowUp : faArrowDown} style={{ fontSize: 12, marginRight: 8 }} />
-                {modal === "inject" ? "Tambah Token" : "Kurangi Token"} — {selectedUser.name}
-              </span>
-              <button onClick={() => setModal(null)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>
-                <FA icon={faXmark} style={{ fontSize: 14 }} />
-              </button>
-            </div>
-
-            <div style={{ padding: 20 }}>
-              <div style={{ padding: "10px 14px", borderRadius: "var(--radius-sm)", background: "var(--bg-elevated)", border: "1px solid var(--border)", marginBottom: 16, fontSize: 13, color: "var(--text-secondary)" }}>
-                Saldo saat ini: <strong style={{ color: "var(--accent)" }}>{selectedUser.tokenBalance.toLocaleString("id-ID")} token</strong>
-              </div>
-
-              <div style={{ marginBottom: 14 }}>
-                <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "var(--text-secondary)", marginBottom: 6 }}>Jumlah Token</label>
-                <input type="number" value={amount} min={1} onChange={e => setAmount(e.target.value)} placeholder="Masukkan jumlah..."
-                  style={inputStyle} onFocus={e => e.target.style.borderColor = "var(--accent)"} onBlur={e => e.target.style.borderColor = "var(--border)"} />
-                {amount && parseInt(amount) > 0 && (
-                  <div style={{
-                    marginTop: 8, padding: "8px 12px",
-                    background: modal === "inject" ? "var(--green-dim)" : "var(--red-dim)",
-                    border: `1px solid ${modal === "inject" ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}`,
-                    borderRadius: "var(--radius-sm)",
-                    display: "flex", justifyContent: "space-between", alignItems: "center",
-                  }}>
-                    <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                      {parseInt(amount).toLocaleString("id-ID")} token ×{" "}
-                      {formatIDR(tokenIdrValue)}
-                    </span>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: modal === "inject" ? "var(--green)" : "var(--red)" }}>
-                      = {formatIDR(parseInt(amount) * tokenIdrValue)}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div style={{ marginBottom: 18 }}>
-                <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "var(--text-secondary)", marginBottom: 6 }}>
-                  Keterangan <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(opsional)</span>
-                </label>
-                <input type="text" value={note} onChange={e => setNote(e.target.value)} placeholder="Alasan inject/deduct..."
-                  style={inputStyle} onFocus={e => e.target.style.borderColor = "var(--accent)"} onBlur={e => e.target.style.borderColor = "var(--border)"} />
-              </div>
-
-              {feedback && (
-                <div style={{ padding: "10px 14px", borderRadius: "var(--radius-sm)", marginBottom: 14, background: feedback.ok ? "var(--green-dim)" : "var(--red-dim)", border: `1px solid ${feedback.ok ? "rgba(34,197,94,0.25)" : "rgba(239,68,68,0.25)"}`, color: feedback.ok ? "var(--green)" : "var(--red)", display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-                  <FA icon={feedback.ok ? faCircleCheck : faTriangleExclamation} style={{ fontSize: 13 }} /> {feedback.msg}
-                </div>
-              )}
-
-              <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => setModal(null)} style={cancelBtnStyle}>Batal</button>
-                <button onClick={handleMutation} disabled={saving || !amount || parseInt(amount) < 1} style={{
-                  flex: 1, padding: "10px", borderRadius: "var(--radius-sm)", border: "none",
-                  background: modal === "inject" ? "var(--green)" : "var(--red)",
-                  color: "#fff", fontSize: 14, fontWeight: 600,
-                  cursor: saving || !amount ? "not-allowed" : "pointer",
-                  opacity: saving || !amount ? 0.6 : 1,
-                }}>
-                  {saving ? "Memproses..." : modal === "inject" ? `Inject ${amount || 0} Token` : `Deduct ${amount || 0} Token`}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <style>{`
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

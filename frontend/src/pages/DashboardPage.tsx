@@ -242,24 +242,18 @@ export default function DashboardPage() {
         /* User Dashboard Grids */
         .user-stats-grid {
           display: grid;
-          grid-template-columns: 300px 1fr 1fr 1fr;
+          grid-template-columns: repeat(3, 1fr);
           gap: 14px;
           margin-bottom: 16px;
         }
-        @media (max-width: 1200px) {
+        @media (max-width: 768px) {
           .user-stats-grid {
             grid-template-columns: 1fr 1fr !important;
           }
-          .user-stats-grid > div:first-child {
-            grid-column: span 2 !important;
-          }
         }
-        @media (max-width: 576px) {
+        @media (max-width: 480px) {
           .user-stats-grid {
             grid-template-columns: 1fr !important;
-          }
-          .user-stats-grid > div:first-child {
-            grid-column: span 1 !important;
           }
         }
 
@@ -1081,78 +1075,8 @@ function UserDashboard({ user, navigate }: { user: any; navigate: any }) {
 
       {loading || !data ? <SkeletonDashboard rows={4} /> : <>
 
-        {/* ── Row 1: Token + Stats ── */}
-        <div className="user-stats-grid" style={{ display: "grid", gridTemplateColumns: "300px 1fr 1fr 1fr", gap: 14, marginBottom: 16 }}>
-
-          {/* Token balance card */}
-          <div className="token-balance-card" style={{
-            background: "linear-gradient(135deg, rgba(200, 150, 10, 0.12) 0%, rgba(20, 22, 33, 0.95) 100%)",
-            border: "1px solid rgba(200, 150, 10, 0.25)",
-            borderRadius: "var(--radius)",
-            padding: "20px",
-            position: "relative",
-            overflow: "hidden",
-            boxShadow: "0 8px 32px rgba(200, 150, 10, 0.05)",
-            animationDelay: "0s",
-          }}>
-            {/* Top gold bar */}
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, #C8960A, #E0A80C)" }} />
-            
-            {/* Glow effect */}
-            <div style={{
-              position: "absolute",
-              bottom: -40,
-              right: -40,
-              width: 120,
-              height: 120,
-              borderRadius: "50%",
-              background: "rgba(200, 150, 10, 0.12)",
-              filter: "blur(25px)",
-              pointerEvents: "none"
-            }} />
-
-            {/* Header: label + tombol kanan */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, position: "relative", zIndex: 2 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                <div className="token-icon-box" style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: "50%",
-                  background: "rgba(200, 150, 10, 0.18)",
-                  border: "1px solid rgba(200, 150, 10, 0.35)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "transform 0.2s",
-                }}>
-                  <FA icon={faCoins} style={{ fontSize: 12, color: "var(--accent)" }} />
-                </div>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Saldo Token</span>
-              </div>
-              <button
-                onClick={() => navigate("/token-request")}
-                className="ajukan-token-btn"
-                style={{
-                  display: "flex", alignItems: "center", gap: 5,
-                  padding: "5px 11px", borderRadius: 8, border: "1px solid rgba(200, 150, 10, 0.35)",
-                  background: "rgba(200, 150, 10, 0.1)", color: "var(--accent)",
-                  fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
-                }}
-              >
-                <FA icon={faArrowUp} style={{ fontSize: 11 }} /> Ajukan Token
-              </button>
-            </div>
-
-            <div style={{ position: "relative", zIndex: 2 }}>
-              <div style={{ fontSize: 38, fontWeight: 900, color: "var(--accent)", letterSpacing: "-1.5px", lineHeight: 1.1, marginBottom: 6 }}>
-                {data.tokenBalance.toLocaleString("id-ID")}
-              </div>
-              <div style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 500 }}>
-                ≈ Estimasi <strong style={{ color: "var(--text-primary)", fontWeight: 700 }}>{data.estimatedTugasLeft}</strong> tugas report
-              </div>
-            </div>
-          </div>
-
+        {/* ── Row 1: Stats ── */}
+        <div className="user-stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 16 }}>
           <StatCard label="Total Tugas"  value={data.orderStats.total.toLocaleString()}     icon={faClipboardList} color="#3b82f6" sub={`Periode ${PERIODS.find(p=>p.value===period)?.label}`} style={{ animationDelay: "0.04s" }} />
           <StatCard label="Selesai"      value={data.orderStats.completed.toLocaleString()} icon={faCircleCheck}   color="#22c55e" sub="Tugas berhasil" style={{ animationDelay: "0.08s" }} />
           <StatCard label="Aktif"        value={data.orderStats.active.toLocaleString()}    icon={faRotate}        color="#eab308" sub="Sedang berjalan" style={{ animationDelay: "0.12s" }} />
@@ -1208,21 +1132,20 @@ function UserDashboard({ user, navigate }: { user: any; navigate: any }) {
           </ChartCard>
         </div>
 
-        {/* ── Row 3: Tugas Aktif + Riwayat Token ── */}
-        <div className="user-lists-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        {/* ── Row 3: Tugas Aktif ── */}
+        <div>
 
-          {/* Tugas Aktif */}
-          <ChartCard title="Tugas Aktif" subtitle="Sedang diproses saat ini"
+          {/* 5 Tugas Terakhir */}
+          <ChartCard title="5 Tugas Terakhir" subtitle="Tugas terbaru yang dibuat"
             action={{ label: "Lihat semua", onClick: () => navigate("/orders") }}
             style={{ animationDelay: "0.24s" }}
           >
-            {data.activeOrders.length === 0 ? (
+            {data.recentOrders.length === 0 ? (
               <div style={{ padding: "32px 16px", textAlign: "center" }}>
-                <FA icon={faCircleCheck} style={{ fontSize: 28, color: "#22c55e", opacity: 0.5, marginBottom: 10 }} />
-                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>Semua selesai!</p>
-                <p style={{ fontSize: 12, color: "var(--text-secondary)" }}>Tidak ada tugas yang sedang aktif.</p>
+                <FA icon={faClipboardList} style={{ fontSize: 28, color: "var(--text-secondary)", opacity: 0.3, marginBottom: 10 }} />
+                <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>Belum ada tugas yang dibuat.</p>
               </div>
-            ) : data.activeOrders.map((o: any, i: number) => {
+            ) : data.recentOrders.map((o: any, i: number) => {
               const s = STATUS_STYLE[o.status] ?? STATUS_STYLE.refunded;
               const platform = detectPlatform(o.link ?? "");
               const pColor = platform ? PLATFORM_COLOR[platform] : "var(--text-secondary)";
@@ -1233,7 +1156,7 @@ function UserDashboard({ user, navigate }: { user: any; navigate: any }) {
                   className="active-order-row"
                   style={{
                     padding: "12px 18px",
-                    borderBottom: i < data.activeOrders.length - 1 ? "1px solid var(--border)" : "none",
+                    borderBottom: i < data.recentOrders.length - 1 ? "1px solid var(--border)" : "none",
                     display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
                     animation: "slideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) both",
                     animationDelay: `${0.25 + i * 0.04}s`
@@ -1241,36 +1164,22 @@ function UserDashboard({ user, navigate }: { user: any; navigate: any }) {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
                       <span style={{ fontSize: 12, fontFamily: "monospace", color: "var(--text-muted)", fontWeight: 700 }}>#{o.id}</span>
-                      
-                      {/* Platform indicator badge */}
+
                       <span style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4,
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: pColor,
+                        display: "inline-flex", alignItems: "center", gap: 4,
+                        fontSize: 12, fontWeight: 700, color: pColor,
                         background: `color-mix(in srgb, ${pColor} 12%, transparent)`,
-                        padding: "2px 6px",
-                        borderRadius: 5,
+                        padding: "2px 6px", borderRadius: 5,
                         border: `1px solid color-mix(in srgb, ${pColor} 20%, transparent)`,
                       }}>
                         {pIcon && <FA icon={pIcon} style={{ fontSize: 11 }} />}
                         {platform || "Lainnya"}
                       </span>
 
-                      {/* Status badge */}
                       <span style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        padding: "2px 7px",
-                        borderRadius: 5,
-                        background: s.bg,
-                        color: s.color,
-                        border: `1px solid ${s.color}20`,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4
+                        fontSize: 12, fontWeight: 700, padding: "2px 7px", borderRadius: 5,
+                        background: s.bg, color: s.color, border: `1px solid ${s.color}20`,
+                        display: "inline-flex", alignItems: "center", gap: 4
                       }}>
                         {["pending", "processing", "in_progress"].includes(o.status) && (
                           <span className="pulse-dot" style={{ width: 5, height: 5, borderRadius: "50%", background: s.color, display: "inline-block" }} />
@@ -1298,57 +1207,6 @@ function UserDashboard({ user, navigate }: { user: any; navigate: any }) {
             })}
           </ChartCard>
 
-          {/* Riwayat Token */}
-          <ChartCard title="Riwayat Token" subtitle="5 transaksi terbaru" style={{ animationDelay: "0.28s" }}>
-            {data.recentTokenTx.length === 0 ? (
-              <div style={{ padding: "32px 16px", textAlign: "center" }}>
-                <FA icon={faCoins} style={{ fontSize: 28, color: "var(--text-secondary)", opacity: 0.3, marginBottom: 10 }} />
-                <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>Belum ada riwayat transaksi token.</p>
-              </div>
-            ) : data.recentTokenTx.map((tx: any, i: number) => {
-              const isIn = ["INJECT","REFUND"].includes(tx.type);
-              const col  = TOKEN_TX_COLOR[tx.type] ?? "#8b8fa8";
-              return (
-                <div key={tx.id}
-                  className="token-tx-row"
-                  style={{
-                    padding: "12px 18px",
-                    borderBottom: i < data.recentTokenTx.length - 1 ? "1px solid var(--border)" : "none",
-                    display: "flex", justifyContent: "space-between", alignItems: "center",
-                    animation: "slideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) both",
-                    animationDelay: `${0.25 + i * 0.04}s`
-                  }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div className="tx-icon-box" style={{
-                      width: 32, height: 32, borderRadius: "50%",
-                      background: `color-mix(in srgb, ${col} 12%, transparent)`,
-                      border: `1px solid color-mix(in srgb, ${col} 20%, transparent)`,
-                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                      transition: "transform 0.2s ease",
-                    }}>
-                      <FA icon={isIn ? faArrowUp : faArrowDown} style={{ fontSize: 11, color: col }} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
-                        {TOKEN_TX_LABEL[tx.type] ?? tx.type}
-                      </div>
-                      <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }}>
-                        {tx.note ?? (tx.orderId ? `Tugas #${tx.orderId}` : "—")}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: col }}>
-                      {isIn ? "+" : "−"}{tx.amount.toLocaleString("id-ID")}
-                    </div>
-                    <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }}>
-                      sisa {tx.balanceAfter.toLocaleString("id-ID")}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </ChartCard>
         </div>
 
       </>}

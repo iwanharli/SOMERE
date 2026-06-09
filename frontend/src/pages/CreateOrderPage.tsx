@@ -144,7 +144,6 @@ export default function CreateOrderPage() {
 
   const [services,     setServices]     = useState<PanelinService[]>([]);
   const [tokenPrices,  setTokenPrices]  = useState<TokenPrice[]>([]);
-  const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [loadingSvc,   setLoadingSvc]   = useState(true);
   const [search,       setSearch]       = useState("");
   const [platform,     setPlatform]     = useState("all");
@@ -160,16 +159,13 @@ export default function CreateOrderPage() {
 
   useEffect(() => {
     const calls = [api.get("/panelin/services")];
-    if (!isAdmin) {
-      calls.push(api.get("/token/prices"), api.get("/token/balance"));
-    }
-    Promise.allSettled(calls).then(([svcRes, pricesRes, balRes]) => {
+    if (!isAdmin) calls.push(api.get("/token/prices"));
+    Promise.allSettled(calls).then(([svcRes, pricesRes]) => {
       if (svcRes.status === "fulfilled") {
         const d = svcRes.value.data?.data;
         setServices(Array.isArray(d) ? d : typeof d === "string" ? JSON.parse(d) : []);
       }
       if (pricesRes?.status === "fulfilled") setTokenPrices(pricesRes.value.data?.data ?? []);
-      if (balRes?.status === "fulfilled") setTokenBalance(balRes.value.data?.data?.tokenBalance ?? 0);
     }).finally(() => setLoadingSvc(false));
   }, [isAdmin]);
 
@@ -227,11 +223,9 @@ export default function CreateOrderPage() {
   const estimatedCost = isAdmin && selected && isValidQty ? Math.ceil((qty / 1000) * selected.rate) : null;
 
   // Untuk user: cek apakah layanan tersedia dan token cukup
-  const tokenAvailable = !isAdmin && selectedTokenPrice?.isActive;
-  const tokenCost = selectedTokenPrice && isValidQty
+  const tokenCost = selectedTokenPrice?.isActive && isValidQty
     ? Math.ceil((qty / 1000) * selectedTokenPrice.tokenPrice)
     : selectedTokenPrice?.tokenPrice ?? 0;
-  const tokenSufficient = !isAdmin ? (selectedTokenPrice ? tokenBalance >= tokenCost : false) : true;
 
   const formatIDR = (v: number) =>
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(v);
@@ -245,7 +239,7 @@ export default function CreateOrderPage() {
 
     const confirm = await swConfirm({
       title: "Konfirmasi Tugas",
-      html: `Mulai <strong>${qty.toLocaleString("id-ID")}</strong> report untuk layanan <strong>${selected.name.replace(/\s*\[.+?\]/, "").trim()}</strong>${!isAdmin && selectedTokenPrice ? `<br/>Biaya: <strong style="color:#C8960A">${tokenCost} token</strong>` : ""}?`,
+      html: `Mulai <strong style="color:#C8960A">${qty.toLocaleString("id-ID")}</strong> report untuk layanan <strong style="color:#e2c97e">${selected.name.replace(/\s*\[.+?\]/, "").trim()}</strong>?`,
       confirmText: "Ya, Mulai",
       cancelText: "Batal",
     });
@@ -257,7 +251,7 @@ export default function CreateOrderPage() {
         service: selected.id, link: link || undefined,
         quantity: qty, comments: comments || undefined,
       });
-      setLink(""); setQuantity(String(selected.min)); setComments("");
+      setLink(""); setQuantity("1000"); setComments("");
       // Simpan receipt untuk ditampilkan
       setReceipt({ order: data?.data, service: selected, tokenCost: !isAdmin ? tokenCost : null });
     } catch (err: any) {
@@ -269,7 +263,7 @@ export default function CreateOrderPage() {
   }
 
   function selectService(s: PanelinService) {
-    setSelected(s); setQuantity(String(s.min));
+    setSelected(s); setQuantity("1000");
   }
 
   function clearSelected() {
@@ -347,28 +341,16 @@ export default function CreateOrderPage() {
                 })()}
 
                 <div style={{ display: "grid", gap: 8, marginBottom: 16 }}>
-                  <div style={summaryRowStyle}>
-                    <span>Harga<span style={{ fontSize: 12, color: "var(--text-secondary)", marginLeft: 5, fontWeight: 400 }}>/1000 Report</span></span>
-                    {isAdmin ? (
-                      <strong style={{ color: "var(--green)" }}>{formatIDR(selected!.rate)}/1k</strong>
-                    ) : selectedTokenPrice?.isActive ? (
-                      <strong style={{ color: "var(--accent)", display: "inline-flex", alignItems: "center", gap: 5 }}>
-                        <FA icon={faCoins} style={{ fontSize: 12 }} /> {selectedTokenPrice.tokenPrice} token
-                      </strong>
-                    ) : (
-                      <strong style={{ color: "var(--red)" }}>Tidak tersedia</strong>
-                    )}
-                  </div>
-                  <div style={summaryRowStyle}>
-                    <span>Min - Max</span>
-                    <strong>{selected!.min.toLocaleString("id-ID")} - {selected!.max.toLocaleString("id-ID")}</strong>
-                  </div>
-                  {!isAdmin && (
+                  {isAdmin && (
                     <div style={summaryRowStyle}>
-                      <span>Saldo</span>
-                      <strong style={{ color: tokenSufficient ? "var(--green)" : "var(--red)" }}>{tokenBalance.toLocaleString("id-ID")} token</strong>
+                      <span>Harga<span style={{ fontSize: 12, color: "var(--text-secondary)", marginLeft: 5, fontWeight: 400 }}>/1000 Report</span></span>
+                      <strong style={{ color: "var(--green)" }}>{formatIDR(selected!.rate)}/1k</strong>
                     </div>
                   )}
+                  <div style={summaryRowStyle}>
+                    <span>Limit</span>
+                    <strong>1.000</strong>
+                  </div>
                 </div>
 
                 <button
@@ -627,19 +609,13 @@ export default function CreateOrderPage() {
                     <div style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.4, marginBottom: 8, color: "var(--text-primary)" }}>
                       {selected.name.replace(/\s*\[.+?\]/, "").trim()}
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      {isAdmin ? (
+                    {isAdmin && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 700, color: "var(--green)", background: "var(--green-dim)", padding: "3px 10px", borderRadius: 20, border: "1px solid rgba(34,197,94,0.2)" }}>
                           {formatIDR(selected.rate)}<span style={{ fontWeight: 400, fontSize: 11, opacity: 0.7 }}>/1k</span>
                         </span>
-                      ) : selectedTokenPrice?.isActive ? (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 13, fontWeight: 700, color: "var(--accent)", background: "var(--accent-dim)", padding: "3px 10px", borderRadius: 20, border: "1px solid rgba(200,150,10,0.2)" }}>
-                          <FA icon={faCoins} style={{ fontSize: 11 }} />{selectedTokenPrice.tokenPrice} token
-                        </span>
-                      ) : (
-                        <span style={{ fontSize: 12, color: "var(--red)", fontWeight: 500, background: "var(--red-dim)", padding: "3px 10px", borderRadius: 20, border: "1px solid rgba(239,68,68,0.2)" }}>Tidak tersedia</span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                   <button
                     onClick={clearSelected}
@@ -676,18 +652,13 @@ export default function CreateOrderPage() {
 
                   {/* Quantity */}
                   <div style={{ marginBottom: 20 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+                    <div style={{ marginBottom: 8 }}>
                       <label style={formLabel}>Jumlah Report</label>
-                      <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-                        {selected.min.toLocaleString("id-ID")} – {selected.max.toLocaleString("id-ID")}
-                      </span>
                     </div>
-                    <input type="number" value={quantity} min={selected.min} max={selected.max} step={1}
-                      onChange={e => setQuantity(e.target.value.replace(/[^0-9]/g, ""))}
-                      onKeyDown={e => [".", ",", "-", "+", "e", "E"].includes(e.key) && e.preventDefault()}
-                      style={{ ...inputStyle, borderColor: quantity && !isValidQty ? "var(--red)" : "var(--border)" }}
-                      onFocus={e => e.target.style.borderColor = quantity && !isValidQty ? "var(--red)" : "rgba(200,150,10,0.6)"}
-                      onBlur={e => e.target.style.borderColor = quantity && !isValidQty ? "var(--red)" : "var(--border)"} />
+                    <input type="number" value={1000} min={1000} max={1000} step={1}
+                      disabled
+                      readOnly
+                      style={{ ...inputStyle, borderColor: "var(--border)", opacity: 0.6, cursor: "not-allowed" }} />
                     {quantity && !isValidQty && (
                       <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, fontSize: 13, color: "var(--red)" }}>
                         <FA icon={faTriangleExclamation} style={{ fontSize: 12 }} />
@@ -716,31 +687,10 @@ export default function CreateOrderPage() {
                     </div>
                   )}
 
-                  {!isAdmin && selectedTokenPrice?.isActive && (
-                    <div style={{ borderRadius: 10, marginBottom: 20, background: "var(--bg-elevated)", border: "1px solid var(--border)", overflow: "hidden" }}>
-                      {[
-                        { label: "Biaya tugas",  value: `${tokenCost} token`,                                       color: "var(--accent)"                                          },
-                        { label: "Saldo Anda",   value: `${tokenBalance.toLocaleString("id-ID")} token`,           color: tokenSufficient ? "var(--green)" : "var(--red)"           },
-                        { label: "Sisa setelah", value: `${(tokenBalance - tokenCost).toLocaleString("id-ID")} token`, color: tokenSufficient ? "var(--text-primary)" : "var(--red)" },
-                      ].map((row, i, arr) => (
-                        <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 18px", borderBottom: i < arr.length - 1 ? "1px solid var(--border)" : "none" }}>
-                          <span style={{ fontSize: 14, color: "var(--text-secondary)" }}>{row.label}</span>
-                          <strong style={{ fontSize: 15, color: row.color }}>{row.value}</strong>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {!isAdmin && selected && !selectedTokenPrice?.isActive && (
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "14px 18px", borderRadius: 10, marginBottom: 20, background: "var(--red-dim)", border: "1px solid rgba(239,68,68,0.25)" }}>
-                      <FA icon={faTriangleExclamation} style={{ fontSize: 16, color: "var(--red)", marginTop: 1, flexShrink: 0 }} />
-                      <span style={{ fontSize: 14, color: "var(--red)", lineHeight: 1.6 }}>Layanan ini belum tersedia untuk pembelian dengan token. Hubungi admin.</span>
-                    </div>
-                  )}
 
                   {/* Submit */}
                   {(() => {
-                    const disabled = !isValidQty || submitting || (!isAdmin && (!tokenAvailable || !tokenSufficient));
+                    const disabled = !isValidQty || submitting;
                     return (
                       <button onClick={handleSubmit} disabled={disabled} style={{
                         width: "100%", padding: "14px", borderRadius: 10, border: "none",
@@ -898,15 +848,13 @@ function ReceiptPage({ receipt, onBack, onNew }: { receipt: any; onBack: () => v
         {/* Detail rows */}
         <div style={{ padding: "4px 0" }}>
           {[
-            { label: "ID Order",         value: `#${o?.id}`,                                        icon: faHashtag,          color: "var(--accent)" },
+            { label: "ID Tugas",          value: `#${o?.id}`,                                        icon: faHashtag,          color: "var(--accent)" },
             { label: "Link / Target",    value: o?.link ?? "—",                                     icon: faArrowUpRightFromSquare, color: "var(--text-primary)", link: o?.link },
             { label: "Jumlah Report",    value: `${o?.quantity?.toLocaleString("id-ID")} report`,   icon: faClipboardList,    color: "var(--text-primary)" },
             { label: "Start Count",   value: o?.start_count != null ? o?.start_count?.toLocaleString("id-ID") : "—", icon: faRotateLeft, color: "var(--text-secondary)" },
             { label: "Sisa",          value: o?.remains     != null ? o?.remains?.toLocaleString("id-ID")     : "—", icon: faRotate,     color: "var(--text-secondary)" },
-            // User: tampilkan token; Admin: tampilkan biaya IDR
-            ...(tokenCost !== null
-              ? [{ label: "Token Digunakan", value: `${tokenCost} token`,           icon: faCoins,      color: "var(--accent)" }]
-              : o?.charge != null
+            // Admin: tampilkan biaya IDR
+            ...(o?.charge != null && tokenCost === null
                 ? [
                     { label: "Harga / 1k",    value: new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(o.rate),   icon: faCoins, color: "var(--text-secondary)" },
                     { label: "Total Biaya",   value: new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(o.charge), icon: faCoins, color: "var(--green)" },

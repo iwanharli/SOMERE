@@ -8,6 +8,8 @@ import {
   faChevronLeft, faChevronRight, faCircleCheck,
   faClock, faCircleXmark, faRotate, faLayerGroup,
   faCalendar, faCopy, faCheck,
+  faUser, faImage, faVideo, faUsers, faEllipsis,
+  faTriangleExclamation, faEyeSlash, faFire, faBolt, faHandFist, faRobot,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faInstagram, faTiktok, faYoutube, faXTwitter,
@@ -19,6 +21,24 @@ import {
   detectReportReason, REPORT_REASONS
 } from "../lib/platform";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+
+const SERVICE_TYPE_ICONS: Record<string, IconProp> = {
+  akun:      faUser,
+  postingan: faImage,
+  video:     faVideo,
+  saluran:   faUsers,
+  lainnya:   faEllipsis,
+};
+
+const REPORT_REASON_ICONS: Record<string, IconProp> = {
+  penipuan:  faTriangleExclamation,
+  dewasa:    faEyeSlash,
+  kebencian: faFire,
+  kekerasan: faBolt,
+  pelecehan: faHandFist,
+  palsu:     faRobot,
+  lainnya:   faEllipsis,
+};
 
 interface Order {
   id: number; service_id: number; link: string | null;
@@ -642,43 +662,6 @@ export default function TugasPage() {
                           <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", margin: 0, lineHeight: 1.4 }} title={cleanName}>
                             {cleanName || `Layanan #${o.service_id}`}
                           </h3>
-                          {/* Service badges (Type / Reason) */}
-                          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                            {detectedType && (
-                              <span style={{
-                                fontSize: 11,
-                                fontWeight: 700,
-                                color: detectedType.color,
-                                background: `${detectedType.color}12`,
-                                border: `1px solid ${detectedType.color}20`,
-                                padding: "2px 8px",
-                                borderRadius: 6,
-                                textTransform: "uppercase",
-                                letterSpacing: "0.02em"
-                              }}>{detectedType.label}</span>
-                            )}
-                            {svcType ? (
-                              <span style={{
-                                fontSize: 11,
-                                fontWeight: 600,
-                                color: `color-mix(in srgb, ${pColor} 90%, white)`,
-                                background: `${pColor}12`,
-                                border: `1px solid ${pColor}20`,
-                                padding: "2px 8px",
-                                borderRadius: 6
-                              }}>{svcType}</span>
-                            ) : detectedReason ? (
-                              <span style={{
-                                fontSize: 11,
-                                fontWeight: 600,
-                                color: detectedReason.color,
-                                background: `${detectedReason.color}12`,
-                                border: `1px solid ${detectedReason.color}20`,
-                                padding: "2px 8px",
-                                borderRadius: 6
-                              }}>{detectedReason.label}</span>
-                            ) : null}
-                          </div>
                         </div>
 
                         {/* Target Link Container */}
@@ -787,14 +770,59 @@ export default function TugasPage() {
                             </div>
                           )}
 
-                          {/* Token */}
-                          <div>
-                            <span style={{ fontSize: 11, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 2 }}>Token</span>
-                            <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
-                              <span style={{ fontSize: 16, fontWeight: 800, color: "var(--accent)" }}>{o.charge.toLocaleString("id-ID")}</span>
-                              <span style={{ fontSize: 11, color: "var(--text-secondary)", fontWeight: 500 }}>token</span>
+                          {/* Token — admin only */}
+                          {isAdmin && (
+                            <div>
+                              <span style={{ fontSize: 11, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 2 }}>Token</span>
+                              <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
+                                <span style={{ fontSize: 16, fontWeight: 800, color: "var(--accent)" }}>{o.charge.toLocaleString("id-ID")}</span>
+                                <span style={{ fontSize: 11, color: "var(--text-secondary)", fontWeight: 500 }}>token</span>
+                              </div>
                             </div>
-                          </div>
+                          )}
+                        </div>
+
+                        {/* Service badges (Type / Reason) — kanan metrics row */}
+                        <div style={{ display: "flex", gap: 6, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                          {detectedType && (
+                            <span style={{
+                              display: "inline-flex", alignItems: "center", gap: 5,
+                              fontSize: 12, fontWeight: 700,
+                              color: detectedType.color,
+                              background: `${detectedType.color}18`,
+                              border: `1px solid ${detectedType.color}35`,
+                              padding: "4px 10px", borderRadius: 7,
+                              textTransform: "uppercase", letterSpacing: "0.03em"
+                            }}>
+                              <FA icon={SERVICE_TYPE_ICONS[detectedTypeKey]} style={{ fontSize: 10 }} />
+                              {detectedType.label}
+                            </span>
+                          )}
+                          {svcType ? (
+                            <span style={{
+                              display: "inline-flex", alignItems: "center", gap: 5,
+                              fontSize: 12, fontWeight: 600,
+                              color: `color-mix(in srgb, ${pColor} 90%, white)`,
+                              background: `${pColor}18`,
+                              border: `1px solid ${pColor}35`,
+                              padding: "4px 10px", borderRadius: 7
+                            }}>
+                              <FA icon={faLayerGroup} style={{ fontSize: 10 }} />
+                              {svcType}
+                            </span>
+                          ) : detectedReason ? (
+                            <span style={{
+                              display: "inline-flex", alignItems: "center", gap: 5,
+                              fontSize: 12, fontWeight: 600,
+                              color: detectedReason.color,
+                              background: `${detectedReason.color}18`,
+                              border: `1px solid ${detectedReason.color}35`,
+                              padding: "4px 10px", borderRadius: 7
+                            }}>
+                              <FA icon={REPORT_REASON_ICONS[detectedReasonKey]} style={{ fontSize: 10 }} />
+                              {detectedReason.label}
+                            </span>
+                          ) : null}
                         </div>
 
                         {/* Cek Status Button */}

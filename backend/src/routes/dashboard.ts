@@ -280,6 +280,10 @@ dashboardRouter.get("/user", async (req: AuthRequest, res) => {
         id: o.id, serviceId: o.serviceId, link: o.link,
         quantity: o.quantity, status: o.status, orderDate: o.orderDate,
       })),
+      recentOrders: userOrderDetails.slice(0, 5).map(o => ({
+        id: o.id, serviceId: o.serviceId, link: o.link,
+        quantity: o.quantity, status: o.status, orderDate: o.orderDate,
+      })),
       recentTokenTx,
       platformData,
       trendData,
