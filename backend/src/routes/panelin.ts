@@ -103,17 +103,38 @@ panelinRouter.get("/orders", async (req: AuthRequest, res) => {
     return;
   }
 
-  // ── ADMIN: semua tugas ────────────────────────────────────────────────────
+  // ── ADMIN: semua tugas yang terhubung ke user ─────────────────────────────
+  const userOrderIds = await prisma.tokenTransaction.findMany({
+    where: { type: "ORDER", orderId: { not: null } },
+    select: { orderId: true },
+  });
+  const orderIds = [...new Set(userOrderIds.map(t => t.orderId!))];
+
+  if (orderIds.length === 0) {
+    res.json({ success: true, data: [], meta: { current_page: page, per_page: perPage, total: 0, last_page: 1 } });
+    return;
+  }
+
   const [total, orders] = await prisma.$transaction([
-    prisma.panelinOrder.count(),
-    prisma.panelinOrder.findMany({ orderBy: { id: "desc" }, skip, take: perPage }),
+    prisma.panelinOrder.count({ where: { id: { in: orderIds } } }),
+    prisma.panelinOrder.findMany({
+      where: { id: { in: orderIds } },
+      orderBy: { id: "desc" },
+      skip,
+      take: perPage,
+    }),
   ]);
 
   if (!total) {
     await syncOrders();
     const [t2, o2] = await prisma.$transaction([
-      prisma.panelinOrder.count(),
-      prisma.panelinOrder.findMany({ orderBy: { id: "desc" }, skip, take: perPage }),
+      prisma.panelinOrder.count({ where: { id: { in: orderIds } } }),
+      prisma.panelinOrder.findMany({
+        where: { id: { in: orderIds } },
+        orderBy: { id: "desc" },
+        skip,
+        take: perPage,
+      }),
     ]);
     const enriched2 = await enrichOrdersWithUser(o2);
     res.json({ success: true, data: enriched2, meta: { current_page: page, per_page: perPage, total: t2, last_page: Math.ceil(t2 / perPage) || 1 } });
